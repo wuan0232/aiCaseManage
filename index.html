@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>aiCaseManage - 智能病例管理系统</title>
+    <title>aiCaseManage - Intelligent Case Management</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,17 +12,17 @@
         <aside class="sidebar">
             <div class="logo">aiCaseManage</div>
             <nav>
-                <button onclick="app.navigate('dashboard')" class="active">📊 仪表盘</button>
-                <button onclick="app.navigate('patients')">👥 患者管理</button>
-                <button onclick="app.navigate('tasks')">📋 诊疗任务追踪</button>
+                <button onclick="app.navigate('dashboard')" class="active">📊 Dashboard</button>
+                <button onclick="app.navigate('patients')">👥 Patients</button>
+                <button onclick="app.navigate('tasks')">📋 Tasks</button>
             </nav>
             <div class="system-status">
-                <span>数据源: LocalStorage</span>
+                <span>Data Source: LocalStorage</span>
                 <span id="storage-size"></span>
                  <!-- 【新增】操作按钮 -->
                 <div style="margin-top: 8px; display: flex; gap: 10px;">
-                    <button onclick="app.resetSystem()" style="color:#ef4444; border:none; background:none; cursor:pointer; font-size:12px;">[重置]</button>
-                    <button onclick="app.exportData()" style="color:#2563eb; border:none; background:none; cursor:pointer; font-size:12px;">[导出JSON]</button>
+                    <button onclick="app.resetSystem()" style="color:#ef4444; border:none; background:none; cursor:pointer; font-size:12px;">[Reset]</button>
+                    <button onclick="app.exportData()" style="color:#2563eb; border:none; background:none; cursor:pointer; font-size:12px;">[Export JSON]</button>
                 </div>
             </div>
             <!-- 在 system-status 区域 -->
@@ -34,23 +34,23 @@
         <main class="main-content">
             <!-- 仪表盘视图 -->
             <section id="view-dashboard" class="view active">
-                <h2>全流程概览</h2>
+                <h2>Overview</h2>
                 <div class="stats-grid">
                     <div class="card stat-card">
-                        <h3>今日患者</h3>
+                        <h3>Today's Patients</h3>
                         <p id="stat-total-patients">0</p>
                     </div>
                     <div class="card stat-card">
-                        <h3>待办任务</h3>
+                        <h3>Pending Tasks</h3>
                         <p id="stat-pending-tasks" class="warning">0</p>
                     </div>
                     <div class="card stat-card">
-                        <h3>已完成诊疗</h3>
+                        <h3>Completed Treatments</h3>
                         <p id="stat-completed-tasks" class="success">0</p>
                     </div>
                 </div>
                 <div class="card">
-                    <h3>最近动态</h3>
+                    <h3>Recent Activity</h3>
                     <ul id="activity-log" class="log-list"></ul>
                 </div>
             </section>
@@ -58,13 +58,13 @@
             <!-- 患者管理视图 -->
             <section id="view-patients" class="view">
                 <div class="header-action">
-                    <h2>患者登记</h2>
-                    <button class="btn-primary" onclick="app.openModal('modal-add-patient')">+ 新增患者</button>
+                    <h2>Patient Registration</h2>
+                    <button class="btn-primary" onclick="app.openModal('modal-add-patient')">+ Add Patient</button>
                 </div>
-                <!-- 【新增】搜索框区域 -->
+                <!-- Search area -->
                 <div class="card" style="margin-bottom: 20px; padding: 15px; background: #f8fafc;">
                     <input type="text" 
-                        placeholder="🔍 输入患者姓名或就诊码进行检索..." 
+                        placeholder="🔍 Search by name or visit code..." 
                         oninput="app.handleSearch(this.value)"
                         style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
                 </div>
@@ -73,10 +73,10 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>姓名</th>
-                                <th>就诊码 (核验用)</th>
-                                <th>当前状态</th>
-                                <th>操作</th>
+                                <th>Name</th>
+                                <th>Visit Code (for verification)</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="patient-list-body"></tbody>
@@ -86,94 +86,94 @@
 
             <!-- 任务追踪视图 -->
             <section id="view-tasks" class="view">
-                <h2>诊疗任务执行台</h2>
+                <h2>Task Board</h2>
                 <div class="filter-bar">
-                    <button class="filter-btn active" onclick="app.filterTasks('ALL')">全部</button>
-                    <button class="filter-btn" onclick="app.filterTasks('PRESCRIPTION')">💊 处方</button>
-                    <button class="filter-btn" onclick="app.filterTasks('IMAGING')">🩻 影像检查</button>
-                    <button class="filter-btn" onclick="app.filterTasks('THERAPY')">💆 理疗</button>
+                    <button class="filter-btn active" onclick="app.filterTasks('ALL')">All</button>
+                    <button class="filter-btn" onclick="app.filterTasks('PRESCRIPTION')">💊 Prescription</button>
+                    <button class="filter-btn" onclick="app.filterTasks('IMAGING')">🩻 Imaging</button>
+                    <button class="filter-btn" onclick="app.filterTasks('THERAPY')">💆 Therapy</button>
                 </div>
                 <div id="task-list-container" class="task-grid">
-                    <!-- 任务卡片由 JS 生成 -->
+                    <!-- Task cards generated by JS -->
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- 模态框：新增患者 -->
+    <!-- Modal: Add Patient -->
     <div id="modal-add-patient" class="modal">
         <div class="modal-content">
-            <h3>新增患者</h3>
+            <h3>Add Patient</h3>
             <form onsubmit="app.handleAddPatient(event)">
                 <div class="form-group">
-                    <label>姓名</label>
+                    <label>Name</label>
                     <input type="text" name="name" required>
                 </div>
                 <div class="form-group">
-                    <label>年龄</label>
+                    <label>Age</label>
                     <input type="number" name="age" required>
                 </div>
                 <div class="form-actions">
-                    <button type="button" onclick="app.closeModal('modal-add-patient')">取消</button>
-                    <button type="submit" class="btn-primary">登记</button>
+                    <button type="button" onclick="app.closeModal('modal-add-patient')">Cancel</button>
+                    <button type="submit" class="btn-primary">Register</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- 模态框：核心核验与执行 -->
+    <!-- Modal: Verification & Execution -->
     <div id="modal-verify" class="modal">
         <div class="modal-content verify-content">
             <div class="verify-header">
-                <h3>🔐 诊疗行为核验与录入</h3>
-                <p>请确保患者在场并核对身份</p>
+                <h3>🔐 Treatment Verification & Entry</h3>
+                <p>Please ensure the patient is present and verify identity</p>
             </div>
             <form onsubmit="app.handleTaskExecution(event)">
                <input type="hidden" id="verify-task-id" name="verify-task-id">
                 <div class="verify-step">
-                    <h4>1. 任务信息</h4>
+                    <h4>1. Task Info</h4>
                     <p id="verify-task-desc">--</p>
                 </div>
 
                 <div class="verify-step">
-                    <h4>2. 结果录入</h4>
-                    <textarea name="result" placeholder="请输入诊断结果、影像报告或治疗反馈..." required></textarea>
+                    <h4>2. Result Input</h4>
+                    <textarea name="result" placeholder="Enter diagnosis, imaging report or therapy feedback..." required></textarea>
                 </div>
 
                 <div class="verify-step highlight-step">
-                    <h4>3. 真实性核验 (AI Logic)</h4>
+                    <h4>3. Authenticity Check (AI Logic)</h4>
                     <div class="form-group">
-                        <label>当前站点 (Location Check)</label>
+                        <label>Current Location (Location Check)</label>
                         <select name="location" required>
-                            <option value="">-- 请选择当前位置 --</option>
-                            <option value="DOC_OFFICE">医生诊室 (开处方)</option>
-                            <option value="IMG_CENTER">影像中心 (CT/X光)</option>
-                            <option value="PHYSIO_ROOM">理疗康复室</option>
+                            <option value="">-- Select current location --</option>
+                            <option value="DOC_OFFICE">Doctor Office (Prescription)</option>
+                            <option value="IMG_CENTER">Imaging Center (CT/X-ray)</option>
+                            <option value="PHYSIO_ROOM">Physio Room</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>患者就诊码 (Patient Verification)</label>
-                        <input type="text" name="visitCode" placeholder="输入患者持有的6位代码" required>
+                        <label>Patient Visit Code (Verification)</label>
+                        <input type="text" name="visitCode" placeholder="Enter the patient's 6-char code" required>
                     </div>
                     <div class="form-group-row">
                         <div>
-                            <label>操作员 ID</label>
+                            <label>Operator ID</label>
                             <select name="operatorId" required>
-                                <option value="DOC_01">张医生 (全科)</option>
-                                <option value="IMG_01">李技师 (影像)</option>
-                                <option value="PHY_01">王治疗师 (理疗)</option>
+                                <option value="DOC_01">Dr. Zhang (Doctor)</option>
+                                <option value="IMG_01">Technician Li (Imaging)</option>
+                                <option value="PHY_01">Therapist Wang (Therapy)</option>
                             </select>
                         </div>
                         <div>
-                            <label>安全 PIN 码</label>
-                            <input type="password" name="pin" placeholder="默认: 1234" required>
+                            <label>Security PIN</label>
+                            <input type="password" name="pin" placeholder="default: 1234" required>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" onclick="app.closeModal('modal-verify')">取消</button>
-                    <button type="submit" class="btn-primary">核验并提交</button>
+                    <button type="button" onclick="app.closeModal('modal-verify')">Cancel</button>
+                    <button type="submit" class="btn-primary">Verify & Submit</button>
                 </div>
             </form>
         </div>
@@ -182,21 +182,21 @@ tml
 <div id="modal-patient-history" class="modal">
     <div class="modal-content" style="width: 600px;">
         <div class="header-action">
-            <h3>📂 患者全流程病历</h3>
+            <h3>📂 Patient Full Record</h3>
             <button class="btn-sm" onclick="app.closeModal('modal-patient-history')">✕</button>
         </div>
         
         <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between;">
             <div>
-                <p style="color: #666; font-size: 12px;">患者姓名</p>
+                <p style="color: #666; font-size: 12px;">Patient Name</p>
                 <p style="font-weight: bold; font-size: 16px;" id="history-p-name">--</p>
             </div>
             <div>
-                <p style="color: #666; font-size: 12px;">就诊码</p>
+                <p style="color: #666; font-size: 12px;">Visit Code</p>
                 <code style="background: #fff; padding: 2px 6px; border-radius: 4px;" id="history-p-code">--</code>
             </div>
             <div>
-                <p style="color: #666; font-size: 12px;">当前状态</p>
+                <p style="color: #666; font-size: 12px;">Current Status</p>
                 <span id="history-p-status" class="badge">--</span>
             </div>
         </div>
@@ -207,53 +207,53 @@ tml
         </div>
     </div>
 </div>
-<!-- 模态框：编辑患者 (新增代码) -->
+<!-- Modal: Edit Patient -->
 <div id="modal-edit-patient" class="modal">
     <div class="modal-content">
-        <h3>✏️ 编辑患者信息</h3>
+        <h3>✏️ Edit Patient</h3>
         <form onsubmit="app.handleEditPatient(event)">
-            <!-- 隐藏域存储 ID -->
+            <!-- hidden id -->
             <input type="hidden" id="edit-p-id" name="id">
             
             <div class="form-group">
-                <label>姓名</label>
+                <label>Name</label>
                 <input type="text" id="edit-p-name" name="name" required>
             </div>
             <div class="form-group">
-                <label>年龄</label>
+                <label>Age</label>
                 <input type="number" id="edit-p-age" name="age" required>
             </div>
-            <!-- 就诊码通常不允许修改，仅展示 -->
+            <!-- visit code is readonly -->
             <div class="form-group">
-                <label>就诊码 (不可修)</label>
+                <label>Visit Code (read-only)</label>
                 <input type="text" id="edit-p-code" disabled style="background:#eee;">
             </div>
 
             <div class="form-actions">
-                <button type="button" onclick="app.closeModal('modal-edit-patient')">取消</button>
-                <button type="submit" class="btn-primary">保存修改</button>
+                <button type="button" onclick="app.closeModal('modal-edit-patient')">Cancel</button>
+                <button type="submit" class="btn-primary">Save</button>
             </div>
         </form>
     </div>
 </div>
-<!-- 【新增】模态框：电子就诊卡 (模拟患者手机端) -->
+<!-- Modal: Digital Visit Card (simulated patient mobile) -->
 <div id="modal-digital-card" class="modal">
     <div class="modal-content" style="width: 360px; text-align: center; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border-radius: 20px;">
         <div style="padding: 20px;">
             <h3 style="margin-bottom: 5px; opacity: 0.9;">aiCaseManage</h3>
-            <p style="font-size: 12px; opacity: 0.8;">电子健康凭证</p>
+            <p style="font-size: 12px; opacity: 0.8;">Digital Health Pass</p>
             
             <div style="background: white; color: #333; margin: 20px 0; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <p style="font-size: 12px; color: #666; margin-bottom: 5px;">请向医生出示此码</p>
+                <p style="font-size: 12px; color: #666; margin-bottom: 5px;">Please show this code to staff</p>
                 <div id="card-visit-code" style="font-size: 32px; font-weight: bold; letter-spacing: 2px; color: #2563eb;">--</div>
             </div>
-
+            
             <div style="text-align: left; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
-                <p>👤 姓名: <span id="card-p-name" style="font-weight: bold;">--</span></p>
-                <p>📅 状态: <span id="card-p-status" style="font-weight: bold;">--</span></p>
+                <p>👤 Name: <span id="card-p-name" style="font-weight: bold;">--</span></p>
+                <p>📅 Status: <span id="card-p-status" style="font-weight: bold;">--</span></p>
             </div>
             
-            <button onclick="app.closeModal('modal-digital-card')" style="margin-top: 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 20px; border-radius: 20px; cursor: pointer;">关闭屏幕</button>
+            <button onclick="app.closeModal('modal-digital-card')" style="margin-top: 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 20px; border-radius: 20px; cursor: pointer;">Close</button>
         </div>
     </div>
 </div>

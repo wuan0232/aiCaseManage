@@ -8,24 +8,24 @@ const INITIAL_DATA = {
     patients: [
         {
             id: '1',
-            name: '张三',
+            name: 'Zhang San',
             age: 35,
             visitCode: 'ABC123',
-            status: '诊疗结束'
+            status: 'Completed'
         },
         {
             id: '2',
-            name: '李四',
+            name: 'Li Si',
             age: 45,
             visitCode: 'DEF456',
-            status: '诊疗结束'
+            status: 'Completed'
         },
         {
             id: '3',
-            name: '王五',
+            name: 'Wang Wu',
             age: 28,
             visitCode: 'GHI789',
-            status: '诊疗结束'
+            status: 'Completed'
         }
     ],
     tasks: [
@@ -33,103 +33,103 @@ const INITIAL_DATA = {
             id: 'T1001',
             patientId: '1',
             type: 'PRESCRIPTION',
-            desc: '感冒症状，开具感冒药',
+            desc: 'Cold symptoms, prescription issued',
             status: 'COMPLETED',
-            result: '开具感冒灵颗粒，每日3次，每次1包',
-            completedBy: '张医生',
+            result: 'Prescribed cold medicine, 3x daily, 1 sachet per dose',
+            completedBy: 'Dr. Zhang',
             completedAt: '2024-01-15 09:30:00'
         },
         {
             id: 'T1002',
             patientId: '1',
             type: 'IMAGING',
-            desc: '胸部CT检查',
+            desc: 'Chest CT scan',
             status: 'COMPLETED',
-            result: '胸部CT显示双肺纹理清晰，未见明显异常',
-            completedBy: '李技师',
+            result: 'Chest CT clear, no obvious abnormalities',
+            completedBy: 'Technician Li',
             completedAt: '2024-01-15 10:15:00'
         },
         {
             id: 'T2001',
             patientId: '2',
             type: 'PRESCRIPTION',
-            desc: '高血压用药',
+            desc: 'Hypertension medication',
             status: 'COMPLETED',
-            result: '开具降压药，每日1次，每次1片',
-            completedBy: '张医生',
+            result: 'Prescribed antihypertensive, once daily',
+            completedBy: 'Dr. Zhang',
             completedAt: '2024-01-15 14:20:00'
         },
         {
             id: 'T2002',
             patientId: '2',
             type: 'THERAPY',
-            desc: '颈椎理疗',
+            desc: 'Cervical physiotherapy',
             status: 'COMPLETED',
-            result: '完成颈椎牵引治疗，患者症状有所缓解',
-            completedBy: '王治疗师',
+            result: 'Completed traction therapy, symptoms improved',
+            completedBy: 'Therapist Wang',
             completedAt: '2024-01-15 15:30:00'
         },
         {
             id: 'T3001',
             patientId: '3',
             type: 'PRESCRIPTION',
-            desc: '胃炎用药',
+            desc: 'Gastritis medication',
             status: 'COMPLETED',
-            result: '开具胃药，每日2次，饭前服用',
-            completedBy: '张医生',
+            result: 'Prescribed gastric meds, twice daily before meals',
+            completedBy: 'Dr. Zhang',
             completedAt: '2024-01-15 11:00:00'
         },
         {
             id: 'T3002',
             patientId: '3',
             type: 'IMAGING',
-            desc: '腹部超声检查',
+            desc: 'Abdominal ultrasound',
             status: 'COMPLETED',
-            result: '腹部超声显示胃壁轻度增厚，其他脏器未见异常',
-            completedBy: '李技师',
+            result: 'Mild gastric wall thickening, otherwise unremarkable',
+            completedBy: 'Technician Li',
             completedAt: '2024-01-15 11:45:00'
         }
     ],
     logs: [
         {
             time: '2024-01-15 09:30:00',
-            msg: '张三就诊完成 - 处方开具'
+            msg: 'Zhang San visit completed - Prescription'
         },
         {
             time: '2024-01-15 10:15:00',
-            msg: '张三就诊完成 - 影像检查'
+            msg: 'Zhang San visit completed - Imaging'
         },
         {
             time: '2024-01-15 14:20:00',
-            msg: '李四就诊完成 - 处方开具'
+            msg: 'Li Si visit completed - Prescription'
         },
         {
             time: '2024-01-15 15:30:00',
-            msg: '李四就诊完成 - 物理治疗'
+            msg: 'Li Si visit completed - Therapy'
         },
         {
             time: '2024-01-15 11:00:00',
-            msg: '王五就诊完成 - 处方开具'
+            msg: 'Wang Wu visit completed - Prescription'
         },
         {
             time: '2024-01-15 11:45:00',
-            msg: '王五就诊完成 - 影像检查'
+            msg: 'Wang Wu visit completed - Imaging'
         }
     ]
 };
 
-// 预设操作员权限表 (模拟后端鉴权配置)
+// Operators (mocked auth config)
 const OPERATORS = {
-    'DOC_01': { name: '张医生', role: 'DOCTOR', allowedLoc: 'DOC_OFFICE', pin: '1234' },
-    'IMG_01': { name: '李技师', role: 'IMAGING', allowedLoc: 'IMG_CENTER', pin: '1234' },
-    'PHY_01': { name: '王治疗师', role: 'THERAPIST', allowedLoc: 'PHYSIO_ROOM', pin: '1234' }
+    'DOC_01': { name: 'Dr. Zhang', role: 'DOCTOR', allowedLoc: 'DOC_OFFICE', pin: '1234' },
+    'IMG_01': { name: 'Technician Li', role: 'IMAGING', allowedLoc: 'IMG_CENTER', pin: '1234' },
+    'PHY_01': { name: 'Therapist Wang', role: 'THERAPIST', allowedLoc: 'PHYSIO_ROOM', pin: '1234' }
 };
 
-// 任务类型与所需地点映射
+// Task types and required locations
 const TASK_CONFIG = {
-    'PRESCRIPTION': { label: '💊 处方开具', requiredLoc: 'DOC_OFFICE' },
-    'IMAGING': { label: '🩻 影像检查', requiredLoc: 'IMG_CENTER' },
-    'THERAPY': { label: '💆 物理治疗', requiredLoc: 'PHYSIO_ROOM' }
+    'PRESCRIPTION': { label: '💊 Prescription', requiredLoc: 'DOC_OFFICE' },
+    'IMAGING': { label: '🩻 Imaging', requiredLoc: 'IMG_CENTER' },
+    'THERAPY': { label: '💆 Therapy', requiredLoc: 'PHYSIO_ROOM' }
 };
 
 class App {
@@ -161,7 +161,7 @@ class App {
     }
     // --- 系统管理 ---
     resetSystem() {
-        if (confirm('⚠️ 确定要清空所有数据吗？此操作不可恢复！')) {
+        if (confirm('⚠️ Are you sure you want to clear all data? This cannot be undone!')) {
             localStorage.removeItem('aiCaseManage_db');
             location.reload(); // 刷新页面
         }
@@ -213,7 +213,7 @@ class App {
             name: formData.get('name'),
             age: formData.get('age'),
             visitCode: visitCode,
-            status: '待诊'
+            status: 'Waiting'
         };
 
         this.data.patients.push(newPatient);
@@ -224,7 +224,7 @@ class App {
         this.saveData();
         this.closeModal('modal-add-patient');
         this.renderPatientList();
-        this.logActivity(`新患者登记: ${newPatient.name} (码:${visitCode})`);
+        this.logActivity(`New patient registered: ${newPatient.name} (code:${visitCode})`);
         e.target.reset();
     }
 
@@ -253,8 +253,8 @@ class App {
         document.getElementById('verify-task-id').value = taskId;
         document.getElementById('verify-task-desc').innerHTML = `
             <strong>${TASK_CONFIG[task.type].label}</strong><br>
-            患者: ${patient.name}<br>
-            <span style="color:red; font-size:12px;">需前往: ${TASK_CONFIG[task.type].requiredLoc}</span>
+            Patient: ${patient.name}<br>
+            <span style="color:red; font-size:12px;">Required location: ${TASK_CONFIG[task.type].requiredLoc}</span>
         `;
         this.openModal('modal-verify');
     }
@@ -275,17 +275,17 @@ class App {
         const patient = this.data.patients.find(p => p.id === task.patientId);
         const operator = OPERATORS[operatorId];
 
-        // --- 核心核验算法 ---
+        // --- Verification logic ---
         const errors = [];
 
         // 1. 校验 PIN 码
         if (operator.pin !== inputPin) {
-            errors.push("❌ 操作员 PIN 码错误！");
+            errors.push("❌ Operator PIN incorrect!");
         }
 
         // 2. 校验患者就诊码 (证明患者在场)
         if (inputVisitCode !== patient.visitCode) {
-            errors.push("❌ 患者就诊码不匹配！请核对患者身份。");
+            errors.push("❌ Patient visit code does not match! Please verify the patient's identity.");
         }
 
         // 3. 校验地点与权限 (Location & Role Check)
@@ -293,11 +293,11 @@ class App {
         const requiredLoc = TASK_CONFIG[task.type].requiredLoc;
         
         if (inputLocation !== requiredLoc) {
-            errors.push(`❌ 地点错误！此业务必须在 [${requiredLoc}] 进行，当前在 [${inputLocation}]`);
+            errors.push(`❌ Location error! This task must be performed at [${requiredLoc}], current: [${inputLocation}]`);
         }
         
         if (operator.allowedLoc !== requiredLoc) {
-            errors.push(`❌ 权限不足！操作员 [${operator.name}] 无权在 [${requiredLoc}] 执行任务。`);
+            errors.push(`❌ Permission denied! Operator [${operator.name}] is not authorized to perform tasks at [${requiredLoc}].`);
         }
 
         if (errors.length > 0) {
@@ -305,8 +305,7 @@ class App {
             return;
         }
 
-        // --- 核验通过，执行业务 ---
-               // --- 核验通过，执行业务 ---
+        // --- Verification passed, execute task ---
         task.status = 'COMPLETED';
         task.result = resultText;
         task.completedBy = operator.name;
@@ -314,20 +313,20 @@ class App {
 
         // 【优化】状态流转逻辑修正
         if (task.type === 'PRESCRIPTION') {
-            patient.status = '诊疗中';
+            patient.status = 'In Treatment';
             
             // 自动派发下一阶段
             if (Math.random() > 0.5) {
-                this.createTask(patient.id, 'IMAGING', '医嘱：胸部CT检查');
-                alert('✅ 处方已开具，系统自动派发：影像检查任务');
+                this.createTask(patient.id, 'IMAGING', 'Order: Chest CT');
+                alert('✅ Prescription issued. Imaging task auto-dispatched.');
             } else {
-                this.createTask(patient.id, 'THERAPY', '医嘱：肩颈康复理疗');
-                alert('✅ 处方已开具，系统自动派发：理疗任务');
+                this.createTask(patient.id, 'THERAPY', 'Order: Neck/shoulder therapy');
+                alert('✅ Prescription issued. Therapy task auto-dispatched.');
             }
         } else {
             // 影像或理疗完成，流程结束
-            patient.status = '诊疗结束';
-            alert('✅ 诊疗项目已完成并归档！');
+            patient.status = 'Completed';
+            alert('✅ Task completed and archived!');
         }
 
 
@@ -359,7 +358,7 @@ class App {
         const sourceData = this.filteredPatients || this.data.patients;
 
         if (sourceData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">暂无匹配患者</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">No matching patients</td></tr>';
             return;
         }
 
@@ -379,11 +378,11 @@ class App {
                     </span>
                 </td>
                 <td>
-                    <button class="btn-sm" onclick="app.viewPatientHistory('${p.id}')">详情</button>
-                    <button class="btn-sm btn-secondary" onclick="app.openEditPatient('${p.id}')">编辑</button>
-                    <!-- 【新增】复诊按钮 -->
-                    <button class="btn-sm" style="background:#8b5cf6; color:white; border:none;" onclick="app.startNewVisit('${p.id}')">复诊</button>
-                    <button class="btn-sm btn-danger" onclick="app.deletePatient('${p.id}')">删除</button>
+                    <button class="btn-sm" onclick="app.viewPatientHistory('${p.id}')">Details</button>
+                    <button class="btn-sm btn-secondary" onclick="app.openEditPatient('${p.id}')">Edit</button>
+                    <!-- Revisit -->
+                    <button class="btn-sm" style="background:#8b5cf6; color:white; border:none;" onclick="app.startNewVisit('${p.id}')">New Visit</button>
+                    <button class="btn-sm btn-danger" onclick="app.deletePatient('${p.id}')">Delete</button>
                 </td>
             </tr>
         `).join('');
@@ -418,21 +417,21 @@ class App {
                 <div class="task-header">
                     <span style="font-weight:bold">${config.label}</span>
                     <span class="badge ${isDone ? 'badge-completed' : 'badge-pending'}">
-                        ${isDone ? '已完成' : '待处理'}
+                        ${isDone ? 'Completed' : 'Pending'}
                     </span>
                 </div>
-                <p style="font-size:14px; color:#666; margin-bottom:8px;">患者: <strong>${patient.name}</strong></p>
+                <p style="font-size:14px; color:#666; margin-bottom:8px;">Patient: <strong>${patient.name}</strong></p>
                 <p style="font-size:13px; margin-bottom:12px;">${t.desc}</p>
                 
                 ${isDone ? `
                     <div style="background:#f9fafb; padding:8px; font-size:12px; border-radius:4px;">
                         <p><strong>结果:</strong> ${t.result}</p>
-                        <p style="color:#999; margin-top:4px;">执行人: ${t.completedBy} @ ${t.completedAt}</p>
+                        <p style="color:#999; margin-top:4px;">Performed by: ${t.completedBy} @ ${t.completedAt}</p>
                     </div>
                 ` : `
                     <div class="task-actions">
                         <button class="btn-primary btn-sm" onclick="app.openVerifyModal('${t.id}')">
-                            ⚡ 执行并核验
+                            ⚡ Execute & Verify
                         </button>
                     </div>
                 `}
@@ -441,7 +440,7 @@ class App {
         }).join('');
         
         if (tasks.length === 0) {
-            container.innerHTML = '<p style="color:#999; text-align:center; grid-column:1/-1;">暂无相关任务</p>';
+            container.innerHTML = '<p style="color:#999; text-align:center; grid-column:1/-1;">No tasks</p>';
         }
     }
         // --- 新增业务逻辑：查看患者病历详情 ---
@@ -463,7 +462,7 @@ class App {
         const timelineContainer = document.getElementById('history-timeline-list');
         
         if (tasks.length === 0) {
-            timelineContainer.innerHTML = '<li style="color:#999">暂无诊疗记录</li>';
+            timelineContainer.innerHTML = '<li style="color:#999">No treatment records</li>';
         } else {
             timelineContainer.innerHTML = tasks.map(t => {
                 const isDone = t.status === 'COMPLETED';
@@ -473,16 +472,16 @@ class App {
                 <li class="timeline-item ${isDone ? 'done' : ''}">
                     <div class="timeline-content">
                         <span class="timeline-time">
-                            ${isDone ? t.completedAt : '待处理...'}
+                            ${isDone ? t.completedAt : 'Pending...'}
                         </span>
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <strong>${config.label}</strong>
                             <span class="badge ${isDone ? 'badge-completed' : 'badge-pending'}">
-                                ${isDone ? '已完成' : '进行中'}
+                                ${isDone ? 'Completed' : 'In Progress'}
                             </span>
                         </div>
                         <p style="margin-top:8px; font-size:13px; color:#555;">
-                            ${isDone ? `🏁 结果: ${t.result}<br><small>执行人: ${t.completedBy}</small>` : `📝 说明: ${t.desc}`}
+                            ${isDone ? `🏁 Result: ${t.result}<br><small>Performed by: ${t.completedBy}</small>` : `📝 Note: ${t.desc}`}
                         </p>
                     </div>
                 </li>
@@ -608,9 +607,9 @@ const app = new App(
 );
 // 辅助函数：根据中文状态返回对应的 CSS 类名后缀
 function getStatusClass(status) {
-    if (status === '待诊') return 'waiting';
-    if (status === '诊疗中') return 'active';
-    if (status === '诊疗结束') return 'done';
+    if (status === 'Waiting') return 'waiting';
+    if (status === 'In Treatment') return 'active';
+    if (status === 'Completed') return 'done';
     return 'default';
 }
 
