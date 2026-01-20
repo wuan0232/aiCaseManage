@@ -5,9 +5,117 @@
 
 // 模拟数据库结构与初始数据
 const INITIAL_DATA = {
-    patients: [],
-    tasks: [],
-    logs: []
+    patients: [
+        {
+            id: '1',
+            name: '张三',
+            age: 35,
+            visitCode: 'ABC123',
+            status: '诊疗结束'
+        },
+        {
+            id: '2',
+            name: '李四',
+            age: 45,
+            visitCode: 'DEF456',
+            status: '诊疗结束'
+        },
+        {
+            id: '3',
+            name: '王五',
+            age: 28,
+            visitCode: 'GHI789',
+            status: '诊疗结束'
+        }
+    ],
+    tasks: [
+        {
+            id: 'T1001',
+            patientId: '1',
+            type: 'PRESCRIPTION',
+            desc: '感冒症状，开具感冒药',
+            status: 'COMPLETED',
+            result: '开具感冒灵颗粒，每日3次，每次1包',
+            completedBy: '张医生',
+            completedAt: '2024-01-15 09:30:00'
+        },
+        {
+            id: 'T1002',
+            patientId: '1',
+            type: 'IMAGING',
+            desc: '胸部CT检查',
+            status: 'COMPLETED',
+            result: '胸部CT显示双肺纹理清晰，未见明显异常',
+            completedBy: '李技师',
+            completedAt: '2024-01-15 10:15:00'
+        },
+        {
+            id: 'T2001',
+            patientId: '2',
+            type: 'PRESCRIPTION',
+            desc: '高血压用药',
+            status: 'COMPLETED',
+            result: '开具降压药，每日1次，每次1片',
+            completedBy: '张医生',
+            completedAt: '2024-01-15 14:20:00'
+        },
+        {
+            id: 'T2002',
+            patientId: '2',
+            type: 'THERAPY',
+            desc: '颈椎理疗',
+            status: 'COMPLETED',
+            result: '完成颈椎牵引治疗，患者症状有所缓解',
+            completedBy: '王治疗师',
+            completedAt: '2024-01-15 15:30:00'
+        },
+        {
+            id: 'T3001',
+            patientId: '3',
+            type: 'PRESCRIPTION',
+            desc: '胃炎用药',
+            status: 'COMPLETED',
+            result: '开具胃药，每日2次，饭前服用',
+            completedBy: '张医生',
+            completedAt: '2024-01-15 11:00:00'
+        },
+        {
+            id: 'T3002',
+            patientId: '3',
+            type: 'IMAGING',
+            desc: '腹部超声检查',
+            status: 'COMPLETED',
+            result: '腹部超声显示胃壁轻度增厚，其他脏器未见异常',
+            completedBy: '李技师',
+            completedAt: '2024-01-15 11:45:00'
+        }
+    ],
+    logs: [
+        {
+            time: '2024-01-15 09:30:00',
+            msg: '张三就诊完成 - 处方开具'
+        },
+        {
+            time: '2024-01-15 10:15:00',
+            msg: '张三就诊完成 - 影像检查'
+        },
+        {
+            time: '2024-01-15 14:20:00',
+            msg: '李四就诊完成 - 处方开具'
+        },
+        {
+            time: '2024-01-15 15:30:00',
+            msg: '李四就诊完成 - 物理治疗'
+        },
+        {
+            time: '2024-01-15 11:00:00',
+            msg: '王五就诊完成 - 处方开具'
+        },
+        {
+            time: '2024-01-15 11:45:00',
+            msg: '王五就诊完成 - 影像检查'
+        }
+    ]
 };
 
 // 预设操作员权限表 (模拟后端鉴权配置)
