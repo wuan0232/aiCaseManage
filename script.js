@@ -33,7 +33,7 @@ const INITIAL_DATA = {
             id: 'T1001',
             patientId: '1',
             type: 'PRESCRIPTION',
-            desc: 'Cold symptoms, prescription issued',
+            desc_key: 'task_default_PRESCRIPTION',
             status: 'COMPLETED',
             result: 'Prescribed cold medicine, 3x daily, 1 sachet per dose',
             completedBy: 'Dr. Zhang',
@@ -43,7 +43,7 @@ const INITIAL_DATA = {
             id: 'T1002',
             patientId: '1',
             type: 'IMAGING',
-            desc: 'Chest CT scan',
+            desc_key: 'task_default_IMAGING',
             status: 'COMPLETED',
             result: 'Chest CT clear, no obvious abnormalities',
             completedBy: 'Technician Li',
@@ -53,7 +53,7 @@ const INITIAL_DATA = {
             id: 'T2001',
             patientId: '2',
             type: 'PRESCRIPTION',
-            desc: 'Hypertension medication',
+            desc_key: 'task_default_PRESCRIPTION',
             status: 'COMPLETED',
             result: 'Prescribed antihypertensive, once daily',
             completedBy: 'Dr. Zhang',
@@ -63,7 +63,7 @@ const INITIAL_DATA = {
             id: 'T2002',
             patientId: '2',
             type: 'THERAPY',
-            desc: 'Cervical physiotherapy',
+            desc_key: 'task_default_THERAPY',
             status: 'COMPLETED',
             result: 'Completed traction therapy, symptoms improved',
             completedBy: 'Therapist Wang',
@@ -73,7 +73,7 @@ const INITIAL_DATA = {
             id: 'T3001',
             patientId: '3',
             type: 'PRESCRIPTION',
-            desc: 'Gastritis medication',
+            desc_key: 'task_default_PRESCRIPTION',
             status: 'COMPLETED',
             result: 'Prescribed gastric meds, twice daily before meals',
             completedBy: 'Dr. Zhang',
@@ -83,7 +83,7 @@ const INITIAL_DATA = {
             id: 'T3002',
             patientId: '3',
             type: 'IMAGING',
-            desc: 'Abdominal ultrasound',
+            desc_key: 'task_default_IMAGING',
             status: 'COMPLETED',
             result: 'Mild gastric wall thickening, otherwise unremarkable',
             completedBy: 'Technician Li',
@@ -93,27 +93,33 @@ const INITIAL_DATA = {
     logs: [
         {
             time: '2024-01-15 09:30:00',
-            msg: 'Zhang San visit completed - Prescription'
+            msg_key: 'log_task_completed',
+            params: { task: 'task_label_PRESCRIPTION', patient: 'Zhang San' }
         },
         {
             time: '2024-01-15 10:15:00',
-            msg: 'Zhang San visit completed - Imaging'
+            msg_key: 'log_task_completed',
+            params: { task: 'task_label_IMAGING', patient: 'Zhang San' }
         },
         {
             time: '2024-01-15 14:20:00',
-            msg: 'Li Si visit completed - Prescription'
+            msg_key: 'log_task_completed',
+            params: { task: 'task_label_PRESCRIPTION', patient: 'Li Si' }
         },
         {
             time: '2024-01-15 15:30:00',
-            msg: 'Li Si visit completed - Therapy'
+            msg_key: 'log_task_completed',
+            params: { task: 'task_label_THERAPY', patient: 'Li Si' }
         },
         {
             time: '2024-01-15 11:00:00',
-            msg: 'Wang Wu visit completed - Prescription'
+            msg_key: 'log_task_completed',
+            params: { task: 'task_label_PRESCRIPTION', patient: 'Wang Wu' }
         },
         {
             time: '2024-01-15 11:45:00',
-            msg: 'Wang Wu visit completed - Imaging'
+            msg_key: 'log_task_completed',
+            params: { task: 'task_label_IMAGING', patient: 'Wang Wu' }
         }
     ]
 };
@@ -127,15 +133,292 @@ const OPERATORS = {
 
 // Task types and required locations
 const TASK_CONFIG = {
-    'PRESCRIPTION': { label: '💊 Prescription', requiredLoc: 'DOC_OFFICE' },
-    'IMAGING': { label: '🩻 Imaging', requiredLoc: 'IMG_CENTER' },
-    'THERAPY': { label: '💆 Therapy', requiredLoc: 'PHYSIO_ROOM' }
+    'PRESCRIPTION': { requiredLoc: 'DOC_OFFICE' },
+    'IMAGING': { requiredLoc: 'IMG_CENTER' },
+    'THERAPY': { requiredLoc: 'PHYSIO_ROOM' }
+};
+
+// Translations
+const TRANSLATIONS = {
+    en: {
+        nav_dashboard: '📊 Dashboard',
+        nav_patients: '👥 Patients',
+        nav_tasks: '📋 Tasks',
+        data_source: 'Data Source: LocalStorage',
+        reset: '[Reset]',
+        export_json: '[Export JSON]',
+        overview: 'Overview',
+        todays_patients: "Today's Patients",
+        pending_tasks: 'Pending Tasks',
+        completed_treatments: 'Completed Treatments',
+        recent_activity: 'Recent Activity',
+        patient_registration: 'Patient Registration',
+        add_patient: '+ Add Patient',
+        search_placeholder: '🔍 Search by name or visit code...',
+        th_id: 'ID', th_name: 'Name', th_visit: 'Visit Code (for verification)', th_status: 'Status', th_actions: 'Actions',
+        task_board: 'Task Board',
+        task_label_PRESCRIPTION: '💊 Prescription',
+        task_label_IMAGING: '🩻 Imaging',
+        task_label_THERAPY: '💆 Therapy',
+        task_default_PRESCRIPTION: 'Prescription: pending doctor',
+        task_default_IMAGING: 'Imaging: pending exam',
+        task_default_THERAPY: 'Therapy: scheduled',
+        step_task_info: '1. Task Info',
+        step_result_input: '2. Result Input',
+        step_auth_check: '3. Authenticity Check (AI Logic)',
+        filter_all: 'All', filter_prescription: '💊 Prescription', filter_imaging: '🩻 Imaging', filter_therapy: '💆 Therapy',
+        add_patient_title: 'Add Patient',
+        cancel: 'Cancel', register: 'Register', save: 'Save',
+        verify_title: '🔐 Treatment Verification & Entry',
+        verify_subtitle: 'Please ensure the patient is present and verify identity',
+        location_default: '-- Select current location --',
+        loc_doc: 'Doctor Office (Prescription)', loc_img: 'Imaging Center (CT/X-ray)', loc_phy: 'Physio Room',
+        patient_visit_code: "Enter the patient's 6-char code",
+        operator_id: 'Operator ID', security_pin: 'Security PIN', verify_submit: 'Verify & Submit',
+        patient_full_record: '📂 Patient Full Record', patient_name: 'Patient Name', visit_code: 'Visit Code', current_status: 'Current Status',
+        age: 'Age',
+        current_location: 'Current Location',
+        edit_patient: '✏️ Edit Patient', visit_code_readonly: 'Visit Code (read-only)',
+        digital_card_title: 'aiCaseManage', digital_card_sub: 'Digital Health Pass', show_code: 'Please show this code to staff',
+        card_name: 'Name:', card_status: 'Status:', close: 'Close',
+        patient_prefix: 'Patient:', result_label: 'Result:', performed_by: 'Performed by:',
+        no_tasks: 'No tasks', no_matching_patients: 'No matching patients', no_treatment_records: 'No treatment records',
+        details: 'Details', new_visit: 'New Visit', delete_label: 'Delete',
+        confirm_reset: '⚠️ Are you sure you want to clear all data? This cannot be undone!',
+        confirm_delete_patient: '⚠️ Warning: deleting a patient will remove all related records. Continue?',
+        log_new_patient: 'New patient registered: {name} (code:{code})',
+        log_task_completed: 'Task completed: {task} - {patient}',
+        log_update_patient: 'Updated patient: {name}',
+        log_delete_patient: 'Admin deleted patient (ID: {id})',
+        confirm_start_new_visit: 'Confirm to start a new visit for {name}? This will reset status and create a new prescription task.',
+        start_new_visit_alert: '✅ New visit started; task created.',
+        task_desc_initial: 'Initial prescription: pending doctor',
+        task_desc_revisit: 'Revisit: waiting for prescription',
+        auto_imaging: '✅ Prescription issued. Imaging task auto-dispatched.',
+        auto_therapy: '✅ Prescription issued. Therapy task auto-dispatched.',
+        task_completed_alert: '✅ Task completed and archived!',
+        status_completed: 'Completed', status_inprogress: 'In Progress', note: 'Note:',
+        status_waiting: 'Waiting', status_in_treatment: 'In Treatment',
+        err_pin_incorrect: '❌ Operator PIN incorrect!',
+        err_visit_code_mismatch: "❌ Patient visit code does not match! Please verify the patient's identity.",
+        err_location_template: '❌ Location error! This task must be performed at {required}, current: {current}',
+        err_permission_template: '❌ Permission denied! Operator {name} is not authorized to perform tasks at {required}.',
+        role_doctor: 'Doctor', role_imaging: 'Imaging', role_therapy: 'Therapy',
+        result_placeholder: 'Enter diagnosis, imaging report or therapy feedback...',
+        unknown: 'Unknown',
+    },
+    zh: {
+        nav_dashboard: '📊 仪表盘',
+        nav_patients: '👥 患者管理',
+        nav_tasks: '📋 诊疗任务',
+        data_source: '数据源: LocalStorage',
+        reset: '[重置]',
+        export_json: '[导出JSON]',
+        overview: '全流程概览',
+        todays_patients: '今日患者',
+        pending_tasks: '待办任务',
+        completed_treatments: '已完成诊疗',
+        recent_activity: '最近动态',
+        patient_registration: '患者登记',
+        add_patient: '+ 新增患者',
+        search_placeholder: '🔍 输入患者姓名或就诊码进行检索...',
+        th_id: 'ID', th_name: '姓名', th_visit: '就诊码 (核验用)', th_status: '当前状态', th_actions: '操作',
+        task_board: '诊疗任务执行台',
+        task_label_PRESCRIPTION: '💊 处方',
+        task_label_IMAGING: '🩻 影像检查',
+        task_label_THERAPY: '💆 物理治疗',
+        task_default_PRESCRIPTION: '处方：待医生开具',
+        task_default_IMAGING: '影像：待检查',
+        task_default_THERAPY: '理疗：已安排',
+        step_task_info: '1. 任务信息',
+        step_result_input: '2. 结果录入',
+        step_auth_check: '3. 真伪核验 (AI 逻辑)',
+        filter_all: '全部', filter_prescription: '💊 处方', filter_imaging: '🩻 影像检查', filter_therapy: '💆 理疗',
+        add_patient_title: '新增患者',
+        cancel: '取消', register: '登记', save: '保存',
+        verify_title: '🔐 诊疗行为核验与录入',
+        verify_subtitle: '请确保患者在场并核对身份',
+        location_default: '-- 请选择当前位置 --',
+        loc_doc: '医生诊室 (开处方)', loc_img: '影像中心 (CT/X光)', loc_phy: '理疗康复室',
+        patient_visit_code: '输入患者持有的6位代码',
+        operator_id: '操作员 ID', security_pin: '安全 PIN 码', verify_submit: '核验并提交',
+        patient_full_record: '📂 患者全流程病历', patient_name: '患者姓名', visit_code: '就诊码', current_status: '当前状态',
+        age: '年龄',
+        current_location: '当前位置',
+        edit_patient: '✏️ 编辑患者', visit_code_readonly: '就诊码 (不可修)',
+        digital_card_title: 'aiCaseManage', digital_card_sub: '电子健康凭证', show_code: '请向医生出示此码',
+        card_name: '姓名:', card_status: '状态:', close: '关闭屏幕',
+        patient_prefix: '患者:', result_label: '结果:', performed_by: '执行人:',
+        no_tasks: '暂无相关任务', no_matching_patients: '暂无匹配患者', no_treatment_records: '暂无诊疗记录',
+        details: '详情', new_visit: '复诊', delete_label: '删除',
+        confirm_reset: '⚠️ 确定要清空所有数据吗？此操作不可恢复！',
+        confirm_delete_patient: '⚠️ 警告：删除患者将同步清空其所有诊疗记录！确定要删除吗？',
+        log_new_patient: '新患者登记: {name} (码:{code})',
+        log_task_completed: '任务完成: {task} - {patient}',
+        log_update_patient: '更新了患者信息: {name}',
+        log_delete_patient: '管理员删除了患者 (ID: {id})',
+        confirm_start_new_visit: '确认要为 {name} 开启新的复诊流程吗？\n这将重置其状态并生成新处方任务。',
+        start_new_visit_alert: '✅ 复诊成功！已生成新任务。',
+        task_desc_initial: '待医生开具处方',
+        task_desc_revisit: '复诊：待医生开具处方',
+        auto_imaging: '✅ 处方已开具，系统自动派发：影像检查任务',
+        auto_therapy: '✅ 处方已开具，系统自动派发：理疗任务',
+        task_completed_alert: '✅ 诊疗项目已完成并归档！',
+        status_completed: '已完成', status_inprogress: '进行中', note: '说明:',
+        status_waiting: '待诊', status_in_treatment: '诊疗中',
+        err_pin_incorrect: '❌ 操作员 PIN 码错误！',
+        err_visit_code_mismatch: '❌ 患者就诊码不匹配！请核对患者身份。',
+        err_location_template: '❌ 地点错误！该任务必须在 {required} 执行，当前: {current}',
+        err_permission_template: '❌ 权限不足！操作员 {name} 无权在 {required} 执行此项操作。',
+        role_doctor: '医生', role_imaging: '影像', role_therapy: '理疗',
+        result_placeholder: '请输入诊断、影像报告或治疗反馈...',
+        unknown: '未知',
+    }
 };
 
 class App {
     constructor() {
         this.data = this.loadData();
+        this.lang = localStorage.getItem('aiCaseManage_lang') || 'en';
         this.init();
+        // apply translations after initial render
+        this.applyTranslations();
+    }
+
+    getText(key, params) {
+        const dict = TRANSLATIONS[this.lang] || TRANSLATIONS['en'];
+        let str = dict[key] || key;
+        if (params) {
+            Object.keys(params).forEach(k => {
+                str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), params[k]);
+            });
+        }
+        return str;
+    }
+
+    setLanguage(lang) {
+        this.lang = lang;
+        localStorage.setItem('aiCaseManage_lang', lang);
+        this.applyTranslations();
+        // re-render dynamic lists so translated labels update
+        this.renderPatientList();
+        this.renderTaskList();
+        this.renderDashboard();
+    }
+
+    applyTranslations() {
+        // Nav
+        const navDashboard = document.getElementById('nav-dashboard');
+        if (navDashboard) navDashboard.innerText = this.getText('nav_dashboard');
+        const navPatients = document.getElementById('nav-patients');
+        if (navPatients) navPatients.innerText = this.getText('nav_patients');
+        const navTasks = document.getElementById('nav-tasks');
+        if (navTasks) navTasks.innerText = this.getText('nav_tasks');
+
+        const ds = document.getElementById('data-source');
+        if (ds) ds.innerText = this.getText('data_source');
+        const btnReset = document.getElementById('btn-reset');
+        if (btnReset) btnReset.innerText = this.getText('reset');
+        const btnExport = document.getElementById('btn-export');
+        if (btnExport) btnExport.innerText = this.getText('export_json');
+        const langSelect = document.getElementById('lang-select');
+        if (langSelect) langSelect.value = this.lang;
+
+        // Headings / stats
+        const hOverview = document.getElementById('heading-overview'); if (hOverview) hOverview.innerText = this.getText('overview');
+        const sPatients = document.getElementById('stat-title-patients'); if (sPatients) sPatients.innerText = this.getText('todays_patients');
+        const sPending = document.getElementById('stat-title-pending'); if (sPending) sPending.innerText = this.getText('pending_tasks');
+        const sCompleted = document.getElementById('stat-title-completed'); if (sCompleted) sCompleted.innerText = this.getText('completed_treatments');
+        const sActivity = document.getElementById('stat-title-activity'); if (sActivity) sActivity.innerText = this.getText('recent_activity');
+
+        // Patients view
+        const hPatients = document.getElementById('heading-patients'); if (hPatients) hPatients.innerText = this.getText('patient_registration');
+        const btnAdd = document.getElementById('btn-add-patient'); if (btnAdd) btnAdd.innerText = this.getText('add_patient');
+        const search = document.getElementById('search-input'); if (search) search.placeholder = this.getText('search_placeholder');
+        const thId = document.getElementById('th-id'); if (thId) thId.innerText = this.getText('th_id');
+        const thName = document.getElementById('th-name'); if (thName) thName.innerText = this.getText('th_name');
+        const thVisit = document.getElementById('th-visit'); if (thVisit) thVisit.innerText = this.getText('th_visit');
+        const thStatus = document.getElementById('th-status'); if (thStatus) thStatus.innerText = this.getText('th_status');
+        const thActions = document.getElementById('th-actions'); if (thActions) thActions.innerText = this.getText('th_actions');
+
+        // Tasks view
+        const hTasks = document.getElementById('heading-tasks'); if (hTasks) hTasks.innerText = this.getText('task_board');
+        const fAll = document.getElementById('filter-all'); if (fAll) fAll.innerText = this.getText('filter_all');
+        const fPre = document.getElementById('filter-prescription'); if (fPre) fPre.innerText = this.getText('filter_prescription');
+        const fImg = document.getElementById('filter-imaging'); if (fImg) fImg.innerText = this.getText('filter_imaging');
+        const fThy = document.getElementById('filter-therapy'); if (fThy) fThy.innerText = this.getText('filter_therapy');
+
+        // Modals: titles and placeholders
+        const addModalTitle = document.querySelector('#modal-add-patient .modal-content h3'); if (addModalTitle) addModalTitle.innerText = this.getText('add_patient_title');
+        const verifyTitle = document.querySelector('#modal-verify .verify-header h3'); if (verifyTitle) verifyTitle.innerText = this.getText('verify_title');
+        const verifySub = document.querySelector('#modal-verify .verify-header p'); if (verifySub) verifySub.innerText = this.getText('verify_subtitle');
+        const stepTaskInfo = document.getElementById('step-task-info'); if (stepTaskInfo) stepTaskInfo.innerText = this.getText('step_task_info');
+        const stepResultInput = document.getElementById('step-result-input'); if (stepResultInput) stepResultInput.innerText = this.getText('step_result_input');
+        const stepAuth = document.getElementById('step-auth-check'); if (stepAuth) stepAuth.innerText = this.getText('step_auth_check');
+        const locSelect = document.querySelector('#modal-verify select[name="location"]');
+        if (locSelect) {
+            const opts = locSelect.options;
+            if (opts.length >= 3) {
+                opts[0].text = this.getText('location_default');
+                opts[1].text = this.getText('loc_doc');
+                opts[2].text = this.getText('loc_img');
+                if (opts[3]) opts[3].text = this.getText('loc_phy');
+            }
+        }
+        const visitInput = document.querySelector('#modal-verify input[name="visitCode"]'); if (visitInput) visitInput.placeholder = this.getText('patient_visit_code');
+        const verifyBtn = document.querySelector('#modal-verify .form-actions button[type="submit"]'); if (verifyBtn) verifyBtn.innerText = this.getText('verify_submit');
+
+        // Localize operator select option texts (name + role)
+        const opSelect = document.querySelector('#modal-verify select[name="operatorId"]');
+        if (opSelect) {
+            Array.from(opSelect.options).forEach(opt => {
+                const op = OPERATORS[opt.value];
+                if (op) {
+                    const roleKey = 'role_' + (op.role || '').toLowerCase();
+                    opt.text = `${op.name} (${this.getText(roleKey)})`;
+                }
+            });
+        }
+
+        // Localize result textarea placeholder
+        const resultArea = document.querySelector('#modal-verify textarea[name="result"]');
+        if (resultArea) resultArea.placeholder = this.getText('result_placeholder');
+
+        // Patient history title
+        const histTitle = document.querySelector('#modal-patient-history .header-action h3'); if (histTitle) histTitle.innerText = this.getText('patient_full_record');
+
+        // Digital card
+        const dcSub = document.querySelector('#modal-digital-card p'); if (dcSub) dcSub.innerText = this.getText('digital_card_sub');
+        const dcShow = document.querySelector('#modal-digital-card div p'); if (dcShow) dcShow.innerText = this.getText('show_code');
+
+        // Add translations for form labels and modal buttons
+        const lblName = document.getElementById('label-name'); if (lblName) lblName.innerText = this.getText('patient_name');
+        const lblAge = document.getElementById('label-age'); if (lblAge) lblAge.innerText = this.getText('age') || 'Age';
+        const btnAddCancel = document.getElementById('btn-add-cancel'); if (btnAddCancel) btnAddCancel.innerText = this.getText('cancel');
+        const btnAddRegister = document.getElementById('btn-add-register'); if (btnAddRegister) btnAddRegister.innerText = this.getText('register');
+
+        const lblLocation = document.getElementById('label-location'); if (lblLocation) lblLocation.innerText = this.getText('current_location') || 'Current Location';
+        const lblVisitCode = document.getElementById('label-visit-code'); if (lblVisitCode) lblVisitCode.innerText = this.getText('patient_visit_code');
+        const lblOperator = document.getElementById('label-operator-id'); if (lblOperator) lblOperator.innerText = this.getText('operator_id');
+        const lblPin = document.getElementById('label-security-pin'); if (lblPin) lblPin.innerText = this.getText('security_pin');
+        const btnVerifyCancel = document.getElementById('btn-verify-cancel'); if (btnVerifyCancel) btnVerifyCancel.innerText = this.getText('cancel');
+
+        // Patient history labels
+        const histName = document.getElementById('hist-label-name'); if (histName) histName.innerText = this.getText('patient_name');
+        const histVisit = document.getElementById('hist-label-visit'); if (histVisit) histVisit.innerText = this.getText('visit_code');
+        const histStatus = document.getElementById('hist-label-status'); if (histStatus) histStatus.innerText = this.getText('current_status');
+
+        // Edit patient modal labels and buttons
+        const editName = document.getElementById('label-edit-name'); if (editName) editName.innerText = this.getText('patient_name');
+        const editAge = document.getElementById('label-edit-age'); if (editAge) editAge.innerText = this.getText('age') || 'Age';
+        const editVisit = document.getElementById('label-edit-visit'); if (editVisit) editVisit.innerText = this.getText('visit_code_readonly');
+        const btnEditCancel = document.getElementById('btn-edit-cancel'); if (btnEditCancel) btnEditCancel.innerText = this.getText('cancel');
+        const btnEditSave = document.getElementById('btn-edit-save'); if (btnEditSave) btnEditSave.innerText = this.getText('save');
+
+        // Digital card labels
+        const cardLblName = document.getElementById('card-label-name'); if (cardLblName) cardLblName.innerText = this.getText('card_name');
+        const cardLblStatus = document.getElementById('card-label-status'); if (cardLblStatus) cardLblStatus.innerText = this.getText('card_status');
+        const btnCardClose = document.getElementById('btn-card-close'); if (btnCardClose) btnCardClose.innerText = this.getText('close');
     }
 
     // --- 数据层 ---
@@ -161,9 +444,9 @@ class App {
     }
     // --- 系统管理 ---
     resetSystem() {
-        if (confirm('⚠️ Are you sure you want to clear all data? This cannot be undone!')) {
+        if (confirm(this.getText('confirm_reset'))) {
             localStorage.removeItem('aiCaseManage_db');
-            location.reload(); // 刷新页面
+            location.reload(); // refresh
         }
     }
 
@@ -218,13 +501,13 @@ class App {
 
         this.data.patients.push(newPatient);
         
-        // 自动生成初始任务 (模拟医生开单)
-        this.createTask(newPatient.id, 'PRESCRIPTION', '待医生开具处方');
-        
+        // create initial task (doctor prescription pending) - store key so description localizes
+        this.createTask(newPatient.id, 'PRESCRIPTION', 'task_default_PRESCRIPTION');
+
         this.saveData();
         this.closeModal('modal-add-patient');
         this.renderPatientList();
-        this.logActivity(`New patient registered: ${newPatient.name} (code:${visitCode})`);
+        this.logActivity(this.getText('log_new_patient', { name: newPatient.name, code: visitCode }));
         e.target.reset();
     }
 
@@ -233,7 +516,8 @@ class App {
             id: 'T' + Date.now() + Math.floor(Math.random()*100),
             patientId,
             type,
-            desc,
+            // use desc_key if provided, otherwise default key per type
+            desc_key: desc || `task_default_${type}`,
             status: 'PENDING',
             result: null,
             completedBy: null,
@@ -251,10 +535,11 @@ class App {
         const patient = this.data.patients.find(p => p.id === task.patientId);
         
         document.getElementById('verify-task-id').value = taskId;
+        const taskLabel = this.getText('task_label_' + task.type) || TASK_CONFIG[task.type].label || task.type;
         document.getElementById('verify-task-desc').innerHTML = `
-            <strong>${TASK_CONFIG[task.type].label}</strong><br>
-            Patient: ${patient.name}<br>
-            <span style="color:red; font-size:12px;">Required location: ${TASK_CONFIG[task.type].requiredLoc}</span>
+            <strong>${taskLabel}</strong><br>
+            ${this.getText('patient_prefix')} ${patient.name}<br>
+            <span style="color:red; font-size:12px;">${this.getText('location_default')} ${TASK_CONFIG[task.type].requiredLoc}</span>
         `;
         this.openModal('modal-verify');
     }
@@ -280,12 +565,12 @@ class App {
 
         // 1. 校验 PIN 码
         if (operator.pin !== inputPin) {
-            errors.push("❌ Operator PIN incorrect!");
+            errors.push(this.getText('err_pin_incorrect'));
         }
 
         // 2. 校验患者就诊码 (证明患者在场)
         if (inputVisitCode !== patient.visitCode) {
-            errors.push("❌ Patient visit code does not match! Please verify the patient's identity.");
+            errors.push(this.getText('err_visit_code_mismatch'));
         }
 
         // 3. 校验地点与权限 (Location & Role Check)
@@ -293,11 +578,11 @@ class App {
         const requiredLoc = TASK_CONFIG[task.type].requiredLoc;
         
         if (inputLocation !== requiredLoc) {
-            errors.push(`❌ Location error! This task must be performed at [${requiredLoc}], current: [${inputLocation}]`);
+            errors.push(this.getText('err_location_template', { required: requiredLoc, current: inputLocation }));
         }
         
         if (operator.allowedLoc !== requiredLoc) {
-            errors.push(`❌ Permission denied! Operator [${operator.name}] is not authorized to perform tasks at [${requiredLoc}].`);
+            errors.push(this.getText('err_permission_template', { name: operator.name, required: requiredLoc }));
         }
 
         if (errors.length > 0) {
@@ -311,29 +596,30 @@ class App {
         task.completedBy = operator.name;
         task.completedAt = new Date().toLocaleString();
 
-        // 【优化】状态流转逻辑修正
+        // state transition logic
         if (task.type === 'PRESCRIPTION') {
             patient.status = 'In Treatment';
-            
-            // 自动派发下一阶段
+
+            // auto-dispatch next
             if (Math.random() > 0.5) {
-                this.createTask(patient.id, 'IMAGING', 'Order: Chest CT');
-                alert('✅ Prescription issued. Imaging task auto-dispatched.');
+                this.createTask(patient.id, 'IMAGING', 'task_default_IMAGING');
+                alert(this.getText('auto_imaging'));
             } else {
-                this.createTask(patient.id, 'THERAPY', 'Order: Neck/shoulder therapy');
-                alert('✅ Prescription issued. Therapy task auto-dispatched.');
+                this.createTask(patient.id, 'THERAPY', 'task_default_THERAPY');
+                alert(this.getText('auto_therapy'));
             }
         } else {
-            // 影像或理疗完成，流程结束
+            // imaging or therapy finished
             patient.status = 'Completed';
-            alert('✅ Task completed and archived!');
+            alert(this.getText('task_completed_alert'));
         }
 
 
         this.saveData();
         this.closeModal('modal-verify');
         this.renderTaskList();
-        this.logActivity(`任务完成: ${TASK_CONFIG[task.type].label} - ${patient.name}`);
+        const taskLabelForLog = this.getText('task_label_' + task.type) || task.type;
+        this.logActivity(this.getText('log_task_completed', { task: taskLabelForLog, patient: patient.name }));
         e.target.reset();
     }
 
@@ -344,12 +630,33 @@ class App {
         document.getElementById('stat-completed-tasks').innerText = this.data.tasks.filter(t => t.status === 'COMPLETED').length;
 
         const logList = document.getElementById('activity-log');
-        logList.innerHTML = this.data.logs.slice(0, 5).map(log => `
+        logList.innerHTML = this.data.logs.slice(0, 5).map(log => {
+            // Resolve localized message: prefer msg_key + params, fallback to msg
+            let displayMsg = log.msg || '';
+            if (log.msg_key) {
+                const params = {};
+                if (log.params) {
+                    Object.keys(log.params).forEach(k => {
+                        const v = log.params[k];
+                        // If value looks like a translation key for a task/status, resolve it
+                        if (typeof v === 'string' && (v.startsWith('task_label_') || v.startsWith('status_'))) {
+                            params[k] = this.getText(v);
+                        } else {
+                            params[k] = v;
+                        }
+                    });
+                }
+                displayMsg = this.getText(log.msg_key, params);
+            }
+
+            const timePart = (log.time || '').split(' ')[1] || '';
+            return `
             <li>
-                <span>${log.msg}</span>
-                <span class="log-time">${log.time.split(' ')[1]}</span>
+                <span>${displayMsg}</span>
+                <span class="log-time">${timePart}</span>
             </li>
-        `).join('');
+        `
+        }).join('');
     }
 
          renderPatientList() {
@@ -358,15 +665,17 @@ class App {
         const sourceData = this.filteredPatients || this.data.patients;
 
         if (sourceData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">No matching patients</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999;">${this.getText('no_matching_patients')}</td></tr>`;
             return;
         }
-
-        tbody.innerHTML = sourceData.map(p => `
+        tbody.innerHTML = sourceData.map(p => {
+            const statusKey = ('status_' + (p.status || '').replace(/\s+/g, '_').toLowerCase());
+            const displayStatus = this.getText(statusKey) || p.status;
+            return `
             <tr>
                 <td>${p.id}</td>
                 <td>
-                    <!-- 点击名字也可以弹出电子卡 -->
+                    <!-- name clickable to show digital card -->
                     <span style="font-weight:bold; cursor:pointer; color:#2563eb;" onclick="app.showDigitalCard('${p.id}')">
                         ${p.name} 📱
                     </span>
@@ -374,18 +683,18 @@ class App {
                 <td><code style="background:#eee;padding:2px 4px;border-radius:4px;">${p.visitCode}</code></td>
                 <td>
                     <span class="status-badge status-${getStatusClass(p.status)}">
-                        ${p.status}
+                        ${displayStatus}
                     </span>
                 </td>
                 <td>
-                    <button class="btn-sm" onclick="app.viewPatientHistory('${p.id}')">Details</button>
-                    <button class="btn-sm btn-secondary" onclick="app.openEditPatient('${p.id}')">Edit</button>
+                    <button class="btn-sm" onclick="app.viewPatientHistory('${p.id}')">${this.getText('details') || 'Details'}</button>
+                    <button class="btn-sm btn-secondary" onclick="app.openEditPatient('${p.id}')">${this.getText('edit_patient') || 'Edit'}</button>
                     <!-- Revisit -->
-                    <button class="btn-sm" style="background:#8b5cf6; color:white; border:none;" onclick="app.startNewVisit('${p.id}')">New Visit</button>
-                    <button class="btn-sm btn-danger" onclick="app.deletePatient('${p.id}')">Delete</button>
+                    <button class="btn-sm" style="background:#8b5cf6; color:white; border:none;" onclick="app.startNewVisit('${p.id}')">${this.getText('new_visit') || 'New Visit'}</button>
+                    <button class="btn-sm btn-danger" onclick="app.deletePatient('${p.id}')">${this.getText('delete_label') || 'Delete'}</button>
                 </td>
             </tr>
-        `).join('');
+        `}).join('');
     }
 
 
@@ -407,31 +716,36 @@ class App {
         // 按时间倒序
         tasks.sort((a, b) => b.id.localeCompare(a.id));
 
+        const unknownName = this.getText('unknown');
         container.innerHTML = tasks.map(t => {
-            const patient = this.data.patients.find(p => p.id === t.patientId) || {name: 'Unknown'};
+            const patient = this.data.patients.find(p => p.id === t.patientId) || {name: unknownName};
             const config = TASK_CONFIG[t.type];
             const isDone = t.status === 'COMPLETED';
+            const label = this.getText('task_label_' + t.type) || t.type;
+            const descText = this.getText(t.desc_key) || t.desc || '';
+            const statusText = isDone ? (this.getText('status_completed') || 'Completed') : (this.getText('status_inprogress') || 'In Progress');
+            const patientPrefix = this.getText('patient_prefix') || 'Patient:';
 
             return `
             <div class="task-card" style="border-left: 4px solid ${isDone ? '#10b981' : '#f59e0b'}">
                 <div class="task-header">
-                    <span style="font-weight:bold">${config.label}</span>
+                    <span style="font-weight:bold">${label}</span>
                     <span class="badge ${isDone ? 'badge-completed' : 'badge-pending'}">
-                        ${isDone ? 'Completed' : 'Pending'}
+                        ${statusText}
                     </span>
                 </div>
-                <p style="font-size:14px; color:#666; margin-bottom:8px;">Patient: <strong>${patient.name}</strong></p>
-                <p style="font-size:13px; margin-bottom:12px;">${t.desc}</p>
+                <p style="font-size:14px; color:#666; margin-bottom:8px;">${patientPrefix} <strong>${patient.name}</strong></p>
+                <p style="font-size:13px; margin-bottom:12px;">${descText}</p>
                 
                 ${isDone ? `
                     <div style="background:#f9fafb; padding:8px; font-size:12px; border-radius:4px;">
-                        <p><strong>结果:</strong> ${t.result}</p>
-                        <p style="color:#999; margin-top:4px;">Performed by: ${t.completedBy} @ ${t.completedAt}</p>
+                        <p><strong>${this.getText('result_label')}</strong> ${t.result}</p>
+                        <p style="color:#999; margin-top:4px;">${this.getText('performed_by')} ${t.completedBy} @ ${t.completedAt}</p>
                     </div>
                 ` : `
                     <div class="task-actions">
                         <button class="btn-primary btn-sm" onclick="app.openVerifyModal('${t.id}')">
-                            ⚡ Execute & Verify
+                            ⚡ ${this.getText('verify_submit') || 'Execute & Verify'}
                         </button>
                     </div>
                 `}
@@ -440,7 +754,7 @@ class App {
         }).join('');
         
         if (tasks.length === 0) {
-            container.innerHTML = '<p style="color:#999; text-align:center; grid-column:1/-1;">No tasks</p>';
+            container.innerHTML = `<p style="color:#999; text-align:center; grid-column:1/-1;">${this.getText('no_tasks')}</p>`;
         }
     }
         // --- 新增业务逻辑：查看患者病历详情 ---
@@ -451,7 +765,8 @@ class App {
         // 1. 填充头部基础信息
         document.getElementById('history-p-name').innerText = patient.name;
         document.getElementById('history-p-code').innerText = patient.visitCode;
-        document.getElementById('history-p-status').innerText = patient.status;
+        const statusKey = ('status_' + (patient.status || '').replace(/\s+/g, '_').toLowerCase());
+        document.getElementById('history-p-status').innerText = this.getText(statusKey) || patient.status;
 
         // 2. 筛选并排序该患者的任务
         const tasks = this.data.tasks.filter(t => t.patientId === patientId);
@@ -462,26 +777,28 @@ class App {
         const timelineContainer = document.getElementById('history-timeline-list');
         
         if (tasks.length === 0) {
-            timelineContainer.innerHTML = '<li style="color:#999">No treatment records</li>';
+            timelineContainer.innerHTML = `<li style="color:#999">${this.getText('no_treatment_records')}</li>`;
         } else {
             timelineContainer.innerHTML = tasks.map(t => {
                 const isDone = t.status === 'COMPLETED';
                 const config = TASK_CONFIG[t.type];
+                const label = this.getText('task_label_' + t.type) || t.type;
+                const descText = this.getText(t.desc_key) || t.desc || '';
                 
                 return `
                 <li class="timeline-item ${isDone ? 'done' : ''}">
                     <div class="timeline-content">
                         <span class="timeline-time">
-                            ${isDone ? t.completedAt : 'Pending...'}
+                            ${isDone ? t.completedAt : this.getText('status_waiting')}
                         </span>
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <strong>${config.label}</strong>
+                            <strong>${label}</strong>
                             <span class="badge ${isDone ? 'badge-completed' : 'badge-pending'}">
-                                ${isDone ? 'Completed' : 'In Progress'}
+                                ${isDone ? this.getText('status_completed') || 'Completed' : this.getText('status_inprogress') || 'In Progress'}
                             </span>
                         </div>
                         <p style="margin-top:8px; font-size:13px; color:#555;">
-                            ${isDone ? `🏁 Result: ${t.result}<br><small>Performed by: ${t.completedBy}</small>` : `📝 Note: ${t.desc}`}
+                            ${isDone ? `🏁 ${this.getText('result_label')} ${t.result}<br><small>${this.getText('performed_by')} ${t.completedBy}</small>` : `📝 ${this.getText('note') || 'Note:'} ${descText}`}
                         </p>
                     </div>
                 </li>
@@ -493,7 +810,7 @@ class App {
     }
         // --- 新增 CRUD：删除患者 ---
     deletePatient(id) {
-        if (!confirm('⚠️ 警告：删除患者将同步清空其所有诊疗记录！确定要删除吗？')) {
+        if (!confirm(this.getText('confirm_delete_patient'))) {
             return;
         }
 
@@ -505,8 +822,8 @@ class App {
 
         this.saveData();
         this.renderPatientList();
-        this.renderDashboard(); // 更新仪表盘数字
-        this.logActivity(`管理员删除了患者 (ID: ${id})`);
+        this.renderDashboard(); // update dashboard
+        this.logActivity(this.getText('log_delete_patient', { id }));
     }
 
     // --- 新增 CRUD：打开编辑窗口 ---
@@ -538,7 +855,7 @@ class App {
             this.saveData();
             this.closeModal('modal-edit-patient');
             this.renderPatientList();
-            this.logActivity(`更新了患者信息: ${patient.name}`);
+            this.logActivity(this.getText('log_update_patient', { name: patient.name }));
         }
     }
         // --- 优化逻辑 1: 电子就诊卡 (模拟患者端) ---
@@ -548,7 +865,8 @@ class App {
 
         document.getElementById('card-visit-code').innerText = patient.visitCode;
         document.getElementById('card-p-name').innerText = patient.name;
-        document.getElementById('card-p-status').innerText = patient.status;
+        const statusKey = ('status_' + (patient.status || '').replace(/\s+/g, '_').toLowerCase());
+        document.getElementById('card-p-status').innerText = this.getText(statusKey) || patient.status;
         
         this.openModal('modal-digital-card');
     }
@@ -571,19 +889,19 @@ class App {
     // --- 优化逻辑 3: 老患复诊 ---
     startNewVisit(patientId) {
         const patient = this.data.patients.find(p => p.id === patientId);
-        if (!confirm(`确认要为 [${patient.name}] 开启新的复诊流程吗？\n这将重置其状态并生成新处方任务。`)) return;
+        if (!confirm(this.getText('confirm_start_new_visit', { name: patient.name }))) return;
 
-        // 1. 重置状态
-        patient.status = '待诊';
+        // reset state
+        patient.status = 'Waiting';
         
-        // 2. 生成新的处方任务
-        this.createTask(patientId, 'PRESCRIPTION', '复诊：待医生开具处方');
+        // create new prescription task (use key so it localizes)
+        this.createTask(patientId, 'PRESCRIPTION', 'task_desc_revisit');
 
         this.saveData();
         this.renderPatientList();
         this.renderTaskList();
-        this.logActivity(`老患复诊: ${patient.name}`);
-        alert('✅ 复诊成功！已生成新任务。');
+        this.logActivity(this.getText('start_new_visit_alert'));
+        alert(this.getText('start_new_visit_alert'));
     }
 
     // --- 优化逻辑 4: 数据导出 ---
