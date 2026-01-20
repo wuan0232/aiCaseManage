@@ -12,17 +12,21 @@
         <aside class="sidebar">
             <div class="logo">aiCaseManage</div>
             <nav>
-                <button onclick="app.navigate('dashboard')" class="active">📊 Dashboard</button>
-                <button onclick="app.navigate('patients')">👥 Patients</button>
-                <button onclick="app.navigate('tasks')">📋 Tasks</button>
+                <button id="nav-dashboard" onclick="app.navigate('dashboard')" class="active">📊 Dashboard</button>
+                <button id="nav-patients" onclick="app.navigate('patients')">👥 Patients</button>
+                <button id="nav-tasks" onclick="app.navigate('tasks')">📋 Tasks</button>
             </nav>
             <div class="system-status">
-                <span>Data Source: LocalStorage</span>
+                <span id="data-source">Data Source: LocalStorage</span>
                 <span id="storage-size"></span>
-                 <!-- 【新增】操作按钮 -->
-                <div style="margin-top: 8px; display: flex; gap: 10px;">
-                    <button onclick="app.resetSystem()" style="color:#ef4444; border:none; background:none; cursor:pointer; font-size:12px;">[Reset]</button>
-                    <button onclick="app.exportData()" style="color:#2563eb; border:none; background:none; cursor:pointer; font-size:12px;">[Export JSON]</button>
+                 <!-- control buttons -->
+                <div style="margin-top: 8px; display: flex; gap: 10px; align-items: center;">
+                    <button id="btn-reset" onclick="app.resetSystem()" style="color:#ef4444; border:none; background:none; cursor:pointer; font-size:12px;">[Reset]</button>
+                    <button id="btn-export" onclick="app.exportData()" style="color:#2563eb; border:none; background:none; cursor:pointer; font-size:12px;">[Export JSON]</button>
+                    <select id="lang-select" onchange="app.setLanguage(this.value)" style="font-size:12px;">
+                        <option value="en">English</option>
+                        <option value="zh">中文</option>
+                    </select>
                 </div>
             </div>
             <!-- 在 system-status 区域 -->
@@ -34,23 +38,23 @@
         <main class="main-content">
             <!-- 仪表盘视图 -->
             <section id="view-dashboard" class="view active">
-                <h2>Overview</h2>
+                <h2 id="heading-overview">Overview</h2>
                 <div class="stats-grid">
                     <div class="card stat-card">
-                        <h3>Today's Patients</h3>
+                        <h3 id="stat-title-patients">Today's Patients</h3>
                         <p id="stat-total-patients">0</p>
                     </div>
                     <div class="card stat-card">
-                        <h3>Pending Tasks</h3>
+                        <h3 id="stat-title-pending">Pending Tasks</h3>
                         <p id="stat-pending-tasks" class="warning">0</p>
                     </div>
                     <div class="card stat-card">
-                        <h3>Completed Treatments</h3>
+                        <h3 id="stat-title-completed">Completed Treatments</h3>
                         <p id="stat-completed-tasks" class="success">0</p>
                     </div>
                 </div>
                 <div class="card">
-                    <h3>Recent Activity</h3>
+                    <h3 id="stat-title-activity">Recent Activity</h3>
                     <ul id="activity-log" class="log-list"></ul>
                 </div>
             </section>
@@ -58,12 +62,12 @@
             <!-- 患者管理视图 -->
             <section id="view-patients" class="view">
                 <div class="header-action">
-                    <h2>Patient Registration</h2>
-                    <button class="btn-primary" onclick="app.openModal('modal-add-patient')">+ Add Patient</button>
+                    <h2 id="heading-patients">Patient Registration</h2>
+                    <button id="btn-add-patient" class="btn-primary" onclick="app.openModal('modal-add-patient')">+ Add Patient</button>
                 </div>
                 <!-- Search area -->
                 <div class="card" style="margin-bottom: 20px; padding: 15px; background: #f8fafc;">
-                    <input type="text" 
+                    <input id="search-input" type="text" 
                         placeholder="🔍 Search by name or visit code..." 
                         oninput="app.handleSearch(this.value)"
                         style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
@@ -72,11 +76,11 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Visit Code (for verification)</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th id="th-id">ID</th>
+                                <th id="th-name">Name</th>
+                                <th id="th-visit">Visit Code (for verification)</th>
+                                <th id="th-status">Status</th>
+                                <th id="th-actions">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="patient-list-body"></tbody>
@@ -86,12 +90,12 @@
 
             <!-- 任务追踪视图 -->
             <section id="view-tasks" class="view">
-                <h2>Task Board</h2>
+                <h2 id="heading-tasks">Task Board</h2>
                 <div class="filter-bar">
-                    <button class="filter-btn active" onclick="app.filterTasks('ALL')">All</button>
-                    <button class="filter-btn" onclick="app.filterTasks('PRESCRIPTION')">💊 Prescription</button>
-                    <button class="filter-btn" onclick="app.filterTasks('IMAGING')">🩻 Imaging</button>
-                    <button class="filter-btn" onclick="app.filterTasks('THERAPY')">💆 Therapy</button>
+                    <button id="filter-all" class="filter-btn active" onclick="app.filterTasks('ALL')">All</button>
+                    <button id="filter-prescription" class="filter-btn" onclick="app.filterTasks('PRESCRIPTION')">💊 Prescription</button>
+                    <button id="filter-imaging" class="filter-btn" onclick="app.filterTasks('IMAGING')">🩻 Imaging</button>
+                    <button id="filter-therapy" class="filter-btn" onclick="app.filterTasks('THERAPY')">💆 Therapy</button>
                 </div>
                 <div id="task-list-container" class="task-grid">
                     <!-- Task cards generated by JS -->
@@ -106,16 +110,16 @@
             <h3>Add Patient</h3>
             <form onsubmit="app.handleAddPatient(event)">
                 <div class="form-group">
-                    <label>Name</label>
+                    <label id="label-name">Name</label>
                     <input type="text" name="name" required>
                 </div>
                 <div class="form-group">
-                    <label>Age</label>
+                    <label id="label-age">Age</label>
                     <input type="number" name="age" required>
                 </div>
                 <div class="form-actions">
-                    <button type="button" onclick="app.closeModal('modal-add-patient')">Cancel</button>
-                    <button type="submit" class="btn-primary">Register</button>
+                    <button type="button" id="btn-add-cancel" onclick="app.closeModal('modal-add-patient')">Cancel</button>
+                    <button type="submit" id="btn-add-register" class="btn-primary">Register</button>
                 </div>
             </form>
         </div>
@@ -131,19 +135,19 @@
             <form onsubmit="app.handleTaskExecution(event)">
                <input type="hidden" id="verify-task-id" name="verify-task-id">
                 <div class="verify-step">
-                    <h4>1. Task Info</h4>
+                    <h4 id="step-task-info">1. Task Info</h4>
                     <p id="verify-task-desc">--</p>
                 </div>
 
                 <div class="verify-step">
-                    <h4>2. Result Input</h4>
+                    <h4 id="step-result-input">2. Result Input</h4>
                     <textarea name="result" placeholder="Enter diagnosis, imaging report or therapy feedback..." required></textarea>
                 </div>
 
                 <div class="verify-step highlight-step">
-                    <h4>3. Authenticity Check (AI Logic)</h4>
+                    <h4 id="step-auth-check">3. Authenticity Check (AI Logic)</h4>
                     <div class="form-group">
-                        <label>Current Location (Location Check)</label>
+                        <label id="label-location">Current Location (Location Check)</label>
                         <select name="location" required>
                             <option value="">-- Select current location --</option>
                             <option value="DOC_OFFICE">Doctor Office (Prescription)</option>
@@ -152,12 +156,12 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Patient Visit Code (Verification)</label>
-                        <input type="text" name="visitCode" placeholder="Enter the patient's 6-char code" required>
+                        <label id="label-visit-code">Patient Visit Code (Verification)</label>
+                        <input type="text" name="visitCode" id="input-visit-code" placeholder="Enter the patient's 6-char code" required>
                     </div>
                     <div class="form-group-row">
                         <div>
-                            <label>Operator ID</label>
+                            <label id="label-operator-id">Operator ID</label>
                             <select name="operatorId" required>
                                 <option value="DOC_01">Dr. Zhang (Doctor)</option>
                                 <option value="IMG_01">Technician Li (Imaging)</option>
@@ -165,14 +169,14 @@
                             </select>
                         </div>
                         <div>
-                            <label>Security PIN</label>
+                            <label id="label-security-pin">Security PIN</label>
                             <input type="password" name="pin" placeholder="default: 1234" required>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" onclick="app.closeModal('modal-verify')">Cancel</button>
+                    <button type="button" id="btn-verify-cancel" onclick="app.closeModal('modal-verify')">Cancel</button>
                     <button type="submit" class="btn-primary">Verify & Submit</button>
                 </div>
             </form>
@@ -188,15 +192,15 @@ tml
         
         <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between;">
             <div>
-                <p style="color: #666; font-size: 12px;">Patient Name</p>
+                <p style="color: #666; font-size: 12px;" id="hist-label-name">Patient Name</p>
                 <p style="font-weight: bold; font-size: 16px;" id="history-p-name">--</p>
             </div>
             <div>
-                <p style="color: #666; font-size: 12px;">Visit Code</p>
+                <p style="color: #666; font-size: 12px;" id="hist-label-visit">Visit Code</p>
                 <code style="background: #fff; padding: 2px 6px; border-radius: 4px;" id="history-p-code">--</code>
             </div>
             <div>
-                <p style="color: #666; font-size: 12px;">Current Status</p>
+                <p style="color: #666; font-size: 12px;" id="hist-label-status">Current Status</p>
                 <span id="history-p-status" class="badge">--</span>
             </div>
         </div>
@@ -216,22 +220,22 @@ tml
             <input type="hidden" id="edit-p-id" name="id">
             
             <div class="form-group">
-                <label>Name</label>
+                <label id="label-edit-name">Name</label>
                 <input type="text" id="edit-p-name" name="name" required>
             </div>
             <div class="form-group">
-                <label>Age</label>
+                <label id="label-edit-age">Age</label>
                 <input type="number" id="edit-p-age" name="age" required>
             </div>
             <!-- visit code is readonly -->
             <div class="form-group">
-                <label>Visit Code (read-only)</label>
+                <label id="label-edit-visit">Visit Code (read-only)</label>
                 <input type="text" id="edit-p-code" disabled style="background:#eee;">
             </div>
 
             <div class="form-actions">
-                <button type="button" onclick="app.closeModal('modal-edit-patient')">Cancel</button>
-                <button type="submit" class="btn-primary">Save</button>
+                <button type="button" id="btn-edit-cancel" onclick="app.closeModal('modal-edit-patient')">Cancel</button>
+                <button type="submit" id="btn-edit-save" class="btn-primary">Save</button>
             </div>
         </form>
     </div>
@@ -249,11 +253,11 @@ tml
             </div>
             
             <div style="text-align: left; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
-                <p>👤 Name: <span id="card-p-name" style="font-weight: bold;">--</span></p>
-                <p>📅 Status: <span id="card-p-status" style="font-weight: bold;">--</span></p>
+                <p><span id="card-label-name">👤 Name:</span> <span id="card-p-name" style="font-weight: bold;">--</span></p>
+                <p><span id="card-label-status">📅 Status:</span> <span id="card-p-status" style="font-weight: bold;">--</span></p>
             </div>
             
-            <button onclick="app.closeModal('modal-digital-card')" style="margin-top: 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 20px; border-radius: 20px; cursor: pointer;">Close</button>
+            <button id="btn-card-close" onclick="app.closeModal('modal-digital-card')" style="margin-top: 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 20px; border-radius: 20px; cursor: pointer;">Close</button>
         </div>
     </div>
 </div>
