@@ -2,30 +2,144 @@
  * aiCaseManage - 核心逻辑
  * 包含数据存储、页面路由、业务核验
  */
+/**
+ * 登录相关功能
+ */
+
+// 全局函数：切换登录角色
+function switchLoginRole(role) {
+    // 移除所有角色的active类
+    document.querySelectorAll('.role-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // 添加当前角色的active类
+    document.getElementById(`role-${role}`).classList.add('active');
+    
+    // 显示对应的登录表单
+    document.querySelectorAll('.login-form').forEach(form => {
+        form.classList.remove('active');
+    });
+    
+    if (role === 'doctor') {
+        document.getElementById('doctor-login-form').classList.add('active');
+    } else if (role === 'patient') {
+        document.getElementById('patient-login-form').classList.add('active');
+    }
+}
+
+// 全局函数：医生登录
+function handleDoctorLogin(event) {
+    event.preventDefault();
+    
+    const account = document.getElementById('doctor-account').value;
+    const password = document.getElementById('doctor-password').value;
+    
+    // 简单验证
+    if (account === 'doc01' && password === '123456') {
+        app.login('doctor', { id: 'DOC_01', name: '张医生' });
+    } else {
+        showLoginAlert('账号或密码错误', 'error');
+    }
+}
+
+// 全局函数：患者登录
+function handlePatientLogin(event) {
+    event.preventDefault();
+    
+    const account = document.getElementById('patient-account').value;
+    const password = document.getElementById('patient-password').value;
+    
+    // 在患者数据中查找匹配的患者
+    const patient = app.data.patients.find(p => 
+        p.account === account && p.password === password
+    );
+    
+    if (patient) {
+        app.login('patient', patient);
+    } else {
+        // 回退兼容：支持演示账号 zhangsan 或 lisi（若本地数据缺失则尝试创建示例患者）
+        if ((account === 'zhangsan' || account === 'lisi') && password === '123456') {
+            const expectedVisit = account === 'zhangsan' ? 'ABC123' : 'DL100';
+            let examplePatient = app.data.patients.find(p => p.account === account) || app.data.patients.find(p => p.visitCode === expectedVisit) || app.data.patients[0];
+            if (!examplePatient) {
+                // 如果 localStorage 中没有任何患者（或未包含示例），则创建一个示例患者以便演示登录
+                const newPatient = {
+                    id: Date.now().toString(),
+                    name: account === 'lisi' ? '李四' : 'Zhang San',
+                    age: 30,
+                    visitCode: expectedVisit,
+                    status: 'Waiting',
+                    account: account,
+                    password: '123456'
+                };
+                app.data.patients.push(newPatient);
+                app.saveData();
+                examplePatient = newPatient;
+            }
+            app.login('patient', examplePatient);
+            return;
+        }
+        showLoginAlert('账号或密码错误', 'error');
+    }
+}
+
+// 显示登录提示
+function showLoginAlert(message, type) {
+    const alertElement = document.getElementById('login-alert');
+    alertElement.textContent = message;
+    alertElement.className = `alert ${type}`;
+    alertElement.style.display = 'block';
+    
+    // 3秒后自动隐藏
+    setTimeout(() => {
+        alertElement.style.display = 'none';
+    }, 3000);
+}
+
+// 在App类中添加登录方法
+/* Removed duplicate earlier App class — its login and patient-specific methods
+   are injected into the main App class below to avoid duplicate declaration */
 
 // 模拟数据库结构与初始数据
 const INITIAL_DATA = {
-    patients: [
+     patients: [
         {
             id: '1',
             name: 'Zhang San',
             age: 35,
             visitCode: 'ABC123',
-            status: 'Completed'
+            status: 'Completed',
+            account: 'zhangsan',
+            password: '123456'
         },
         {
             id: '2',
             name: 'Li Si',
             age: 45,
             visitCode: 'DEF456',
-            status: 'Completed'
+            status: 'Completed',
+            account: 'lisi',
+            password: '123456'
         },
         {
             id: '3',
             name: 'Wang Wu',
             age: 28,
             visitCode: 'GHI789',
-            status: 'Completed'
+            status: 'Completed',
+            account: 'wangwu',
+            password: '123456'
+        }
+        ,
+        {
+            id: '4',
+            name: '李四',
+            age: 32,
+            visitCode: 'DL100',
+            status: 'Waiting',
+            account: 'lisi',
+            password: '123456'
         }
     ],
     tasks: [
@@ -127,8 +241,8 @@ const INITIAL_DATA = {
 // Operators (mocked auth config)
 const OPERATORS = {
     'DOC_01': { name: 'Dr. Zhang', role: 'DOCTOR', allowedLoc: 'DOC_OFFICE', pin: '1234' },
-    'IMG_01': { name: 'Technician Li', role: 'IMAGING', allowedLoc: 'IMG_CENTER', pin: '1234' },
-    'PHY_01': { name: 'Therapist Wang', role: 'THERAPIST', allowedLoc: 'PHYSIO_ROOM', pin: '1234' }
+    'PHY_01': { name: 'Therapist Wang', role: 'THERAPIST', allowedLoc: 'PHYSIO_ROOM', pin: '1234' },
+    
 };
 
 // Task types and required locations
@@ -136,6 +250,53 @@ const TASK_CONFIG = {
     'PRESCRIPTION': { requiredLoc: 'DOC_OFFICE' },
     'IMAGING': { requiredLoc: 'IMG_CENTER' },
     'THERAPY': { requiredLoc: 'PHYSIO_ROOM' }
+};
+
+// 真实定位点定义（基于上海地区医院相关位置）
+// 经纬度使用WGS84坐标系，radius单位为米
+const LOCATIONS = {
+    'DOC_OFFICE': { 
+        lat: 31.2204, 
+        lon: 121.4476, 
+        radius: 100,  // 医生办公室 - 瑞金医院附近
+        name: '医生办公室',
+        address: '上海市黄浦区瑞金二路197号'
+    },
+    'IMG_CENTER': { 
+        lat: 31.2216, 
+        lon: 121.4493, 
+        radius: 150,  // 影像中心 - 瑞金医院影像楼
+        name: '影像中心',
+        address: '上海市黄浦区瑞金二路197号影像楼'
+    },
+    'PHYSIO_ROOM': { 
+        lat: 31.2192, 
+        lon: 121.4458, 
+        radius: 100,  // 物理治疗室 - 瑞金医院康复楼
+        name: '物理治疗室',
+        address: '上海市黄浦区瑞金二路197号康复楼'
+    },
+    'REGISTRATION': {
+        lat: 31.2198,
+        lon: 121.4465,
+        radius: 80,   // 挂号处 - 瑞金医院门诊楼
+        name: '挂号处',
+        address: '上海市黄浦区瑞金二路197号门诊楼'
+    },
+    'PHARMACY': {
+        lat: 31.2209,
+        lon: 121.4481,
+        radius: 60,   // 药房 - 瑞金医院药房
+        name: '药房',
+        address: '上海市黄浦区瑞金二路197号药房'
+    },
+    'LABORATORY': {
+        lat: 31.2210,
+        lon: 121.4470,
+        radius: 70,   // 检验科 - 瑞金医院检验科
+        name: '检验科',
+        address: '上海市黄浦区瑞金二路197号检验科'
+    }
 };
 
 // Translations
@@ -203,7 +364,7 @@ const TRANSLATIONS = {
         err_visit_code_mismatch: "❌ Patient visit code does not match! Please verify the patient's identity.",
         err_location_template: '❌ Location error! This task must be performed at {required}, current: {current}',
         err_permission_template: '❌ Permission denied! Operator {name} is not authorized to perform tasks at {required}.',
-        role_doctor: 'Doctor', role_imaging: 'Imaging', role_therapy: 'Therapy',
+        role_doctor: 'Doctor', role_therapist: 'Therapist', role_technician: 'Technician',
         result_placeholder: 'Enter diagnosis, imaging report or therapy feedback...',
         unknown: 'Unknown',
     },
@@ -270,7 +431,7 @@ const TRANSLATIONS = {
         err_visit_code_mismatch: '❌ 患者就诊码不匹配！请核对患者身份。',
         err_location_template: '❌ 地点错误！该任务必须在 {required} 执行，当前: {current}',
         err_permission_template: '❌ 权限不足！操作员 {name} 无权在 {required} 执行此项操作。',
-        role_doctor: '医生', role_imaging: '影像', role_therapy: '理疗',
+        role_doctor: '医生', role_therapist: '理疗师', role_technician: '影像技师',
         result_placeholder: '请输入诊断、影像报告或治疗反馈...',
         unknown: '未知',
     }
@@ -280,9 +441,348 @@ class App {
     constructor() {
         this.data = this.loadData();
         this.lang = localStorage.getItem('aiCaseManage_lang') || 'en';
+        this.currentUser = null;
+        this.userRole = null;
+        this.currentPatientId = null; // 当前登录的患者ID
+        this.currentDetectedLocation = null; // {lat,lon,nearest,distance}
+        this.locationStatus = 'idle'; // 'idle', 'detecting', 'success', 'error'
         this.init();
         // apply translations after initial render
         this.applyTranslations();
+
+        // 检查是否已登录
+        this.checkLogin();
+    }
+
+    // 更新定位UI的辅助方法
+    _updateLocationUI(status, message) {
+        const el = document.getElementById('detected-location');
+        if (el) {
+            el.innerText = message;
+            // 根据状态设置不同的样式
+            el.className = '';
+            if (status === 'detecting') {
+                el.style.color = '#2196F3'; // 蓝色表示正在定位
+            } else if (status === 'success') {
+                el.style.color = '#4CAF50'; // 绿色表示成功
+            } else if (status === 'error') {
+                el.style.color = '#f44336'; // 红色表示错误
+            } else {
+                el.style.color = ''; // 默认颜色
+            }
+        }
+    }
+
+    // 使用模拟定位获取位置（真实定位代码已注释）
+    detectLocation() {
+        console.log('detectLocation called');
+        // 更新状态为正在定位
+        this.locationStatus = 'detecting';
+        this._updateLocationUI('detecting', this.lang === 'zh' ? '正在定位中...' : 'Locating...');
+
+        // 模拟定位延迟
+        setTimeout(() => {
+            console.log('setTimeout callback executed');
+
+            // 获取当前任务ID
+            const taskIdInput = document.getElementById('verify-task-id');
+            if (!taskIdInput || !taskIdInput.value) {
+                this._updateLocationUI('error', this.lang === 'zh' ? '请先选择一个任务' : 'Please select a task first');
+                return;
+            }
+
+            const taskId = taskIdInput.value;
+            const task = this.data.tasks.find(t => t.id === taskId);
+
+            if (!task || !TASK_CONFIG[task.type]) {
+                this._updateLocationUI('error', this.lang === 'zh' ? '无效的任务类型' : 'Invalid task type');
+                return;
+            }
+
+            // 获取任务要求的位置
+            const requiredLocation = TASK_CONFIG[task.type].requiredLoc;
+            console.log('Task type:', task.type, 'Required location:', requiredLocation);
+
+            // 随机决定是否匹配位置（30%概率不匹配）
+            const shouldMismatch = Math.random() < 0.3;
+            console.log('Should mismatch:', shouldMismatch);
+
+            let detectedLocation;
+            if (shouldMismatch) {
+                // 随机选择一个不匹配的位置
+                const locationKeys = Object.keys(LOCATIONS).filter(loc => loc !== requiredLocation);
+                detectedLocation = locationKeys[Math.floor(Math.random() * locationKeys.length)];
+                console.log('Mismatched location:', detectedLocation);
+            } else {
+                // 使用任务要求的位置
+                detectedLocation = requiredLocation;
+                console.log('Matched location:', detectedLocation);
+            }
+
+            // 获取该位置的坐标
+            const { lat, lon } = LOCATIONS[detectedLocation];
+            console.log('Location coordinates:', { lat, lon });
+
+            // 添加一些随机偏移，模拟定位误差
+            const offsetLat = (Math.random() - 0.5) * 0.0001;
+            const offsetLon = (Math.random() - 0.5) * 0.0001;
+
+            // 计算模拟距离（在10-30米之间）
+            const simulatedDistance = 10 + Math.random() * 20;
+
+            // 更新当前位置信息
+            this.currentDetectedLocation = {
+                lat: lat + offsetLat,
+                lon: lon + offsetLon,
+                nearest: detectedLocation,
+                distance: simulatedDistance
+            };
+
+            // 更新UI显示
+            const locationName = LOCATIONS[detectedLocation].name;
+            const distText = simulatedDistance.toFixed(1) + 'm';
+
+            // 检查位置是否匹配
+            if (detectedLocation !== requiredLocation) {
+                // 位置不匹配，显示红色错误提示
+                const errorMsg = this.lang === 'zh'
+                    ? `❌ 位置错误：您当前在${locationName}，但任务要求在${LOCATIONS[requiredLocation].name}`
+                    : `❌ Location Error: You are at ${locationName}, but task requires ${LOCATIONS[requiredLocation].name}`;
+                this._updateLocationUI('error', errorMsg);
+
+                // 自动选择检测到的位置
+                const locSelect = document.querySelector('#modal-verify select[name="location"]');
+                if (locSelect) {
+                    locSelect.value = detectedLocation;
+
+                    // 显示红色错误提示
+                    const errorEl = document.createElement('div');
+                    errorEl.style.cssText = 'color: #dc2626; font-size: 13px; margin-top: 8px; padding: 10px; background: #fee2e2; border: 1px solid #fecaca; border-radius: 4px;';
+                    errorEl.id = 'location-error';
+                    errorEl.innerHTML = errorMsg;
+
+                    // 移除旧的错误提示
+                    const oldError = document.getElementById('location-error');
+                    if (oldError) {
+                        oldError.remove();
+                    }
+
+                    // 添加新的错误提示
+                    const locationDiv = document.getElementById('detected-location').parentNode;
+                    locationDiv.appendChild(errorEl);
+                }
+            } else {
+                // 位置匹配，显示成功信息
+                this._updateLocationUI('success', `${this.lang === 'zh' ? '检测到' : 'Detected'}: ${locationName} (${this.lang === 'zh' ? '距离' : 'dist'}: ${distText})`);
+
+                // 自动选择检测到的最近位置
+                const locSelect = document.querySelector('#modal-verify select[name="location"]');
+                if (locSelect) {
+                    locSelect.value = detectedLocation;
+
+                    // 移除错误提示
+                    const oldError = document.getElementById('location-error');
+                    if (oldError) {
+                        oldError.remove();
+                    }
+                }
+            }
+        }, 1000);  // 模拟1秒的定位延迟
+
+        // 以下是真实定位代码（已注释）
+        /*
+        // 使用Geolocation API获取位置
+        const options = {
+            enableHighAccuracy: true,  // 请求高精度定位
+            timeout: 10000,            // 10秒超时
+            maximumAge: 0              // 不使用缓存的位置
+        };
+
+        navigator.geolocation.getCurrentPosition(
+            // 成功回调
+            (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+
+                // 计算与每个已知地点的距离（使用Haversine公式）
+                let nearest = null;
+                let minDist = Infinity;
+                Object.keys(LOCATIONS).forEach(k => {
+                    const d = this._haversineDistance(lat, lon, LOCATIONS[k].lat, LOCATIONS[k].lon);
+                    if (d < minDist) { 
+                        minDist = d; 
+                        nearest = k; 
+                    }
+                });
+
+                // 更新当前位置信息
+                this.currentDetectedLocation = { lat, lon, nearest, distance: minDist };
+                this.locationStatus = 'success';
+
+                // 更新UI显示
+                const locationName = nearest ? (LOCATIONS[nearest].name || nearest) : (this.lang === 'zh' ? '未知位置' : 'Unknown location');
+                const distText = minDist < Infinity ? `${minDist.toFixed(1)}m` : 'N/A';
+                this._updateLocationUI('success', `${this.lang === 'zh' ? '检测到' : 'Detected'}: ${locationName} (${this.lang === 'zh' ? '距离' : 'dist'}: ${distText})`);
+
+                // 自动选择检测到的最近位置
+                const locSelect = document.querySelector('#modal-verify select[name="location"]');
+                if (locSelect && nearest) {
+                    locSelect.value = nearest;
+                }
+            },
+            // 错误回调
+            (error) => {
+                let errorMsg = '';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMsg = this.lang === 'zh' ? '用户拒绝了定位请求' : 'User denied the request for Geolocation';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMsg = this.lang === 'zh' ? '位置信息不可用' : 'Location information is unavailable';
+                        break;
+                    case error.TIMEOUT:
+                        errorMsg = this.lang === 'zh' ? '定位请求超时' : 'The request to get user location timed out';
+                        break;
+                    default:
+                        errorMsg = this.lang === 'zh' ? '定位发生未知错误' : 'An unknown error occurred';
+                        break;
+                }
+                this.locationStatus = 'error';
+                this._updateLocationUI('error', errorMsg);
+            },
+            options
+        );
+        */
+    }
+
+    // 使用Haversine公式计算两点间的实际地理距离（单位：米）
+    _haversineDistance(lat1, lon1, lat2, lon2) {
+        // 地球半径，单位为米
+        const R = 6371000;
+
+        // 将经纬度从度数转换为弧度
+        const φ1 = lat1 * Math.PI / 180;
+        const φ2 = lat2 * Math.PI / 180;
+        const Δφ = (lat2 - lat1) * Math.PI / 180;
+        const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+        // Haversine公式
+        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                  Math.cos(φ1) * Math.cos(φ2) *
+                  Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+        // 返回距离（米）
+        return R * c;
+    }
+
+    // 保留简单欧氏距离方法作为备用
+    _dist(lat1, lon1, lat2, lon2) {
+        return this._haversineDistance(lat1, lon1, lat2, lon2);
+    }
+
+    // --- 会话与登录管理（添加以确保实例可用） ---
+    checkLogin() {
+        const savedUser = localStorage.getItem('aiCaseManage_user');
+        if (savedUser) {
+            try {
+                const { role, userData } = JSON.parse(savedUser);
+                this.login(role, userData, true);
+            } catch (e) {
+                // ignore malformed saved user
+            }
+        }
+    }
+
+    login(role, userData, isAutoLogin = false) {
+        this.userRole = role;
+        this.currentUser = userData;
+
+        if (role === 'patient') this.currentPatientId = userData.id;
+
+        localStorage.setItem('aiCaseManage_user', JSON.stringify({ role, userData }));
+
+        const loginContainer = document.getElementById('login-container');
+        const appContainer = document.getElementById('app-container');
+        if (loginContainer) loginContainer.style.display = 'none';
+        if (appContainer) appContainer.style.display = 'flex';
+
+        this.setupRoleBasedUI();
+
+        if (!isAutoLogin) {
+            const who = userData && userData.name ? userData.name : role;
+            this.logActivity(`${who} 登录系统`);
+        }
+    }
+
+    setupRoleBasedUI() {
+        if (this.userRole === 'doctor') {
+            const navPatients = document.getElementById('nav-patients'); if (navPatients) navPatients.style.display = 'block';
+            const navTasks = document.getElementById('nav-tasks'); if (navTasks) navTasks.style.display = 'block';
+            const navSelf = document.getElementById('nav-patient-self'); if (navSelf) navSelf.style.display = 'none';
+            const btnAdd = document.getElementById('btn-add-patient'); if (btnAdd) btnAdd.style.display = 'block';
+            this.navigate('dashboard');
+        } else if (this.userRole === 'patient') {
+            const navPatients = document.getElementById('nav-patients'); if (navPatients) navPatients.style.display = 'none';
+            const navTasks = document.getElementById('nav-tasks'); if (navTasks) navTasks.style.display = 'none';
+            const navSelf = document.getElementById('nav-patient-self'); if (navSelf) navSelf.style.display = 'block';
+            const btnAdd = document.getElementById('btn-add-patient'); if (btnAdd) btnAdd.style.display = 'none';
+            this.navigate('patient-self');
+            this.loadPatientSelfInfo();
+        }
+    }
+
+    loadPatientSelfInfo() {
+        if (!this.currentPatientId) return;
+        const patient = this.data.patients.find(p => p.id === this.currentPatientId);
+        if (!patient) return;
+        const nameEl = document.getElementById('self-p-name'); if (nameEl) nameEl.textContent = patient.name;
+        const codeEl = document.getElementById('self-p-code'); if (codeEl) codeEl.textContent = patient.visitCode;
+        const statusEl = document.getElementById('self-p-status'); if (statusEl) statusEl.textContent = this.getText('status_' + (patient.status || '').replace(/\s+/g, '_').toLowerCase()) || patient.status;
+        this.renderPatientSelfTimeline(patient.id);
+    }
+
+    renderPatientSelfTimeline(patientId) {
+        const timelineContainer = document.getElementById('self-history-timeline');
+        if (!timelineContainer) return;
+        const patient = this.data.patients.find(p => p.id === patientId);
+        if (!patient) {
+            timelineContainer.innerHTML = `<li style="color:#999">${this.getText('no_treatment_records') || 'No records'}</li>`;
+            return;
+        }
+        const tasks = this.data.tasks.filter(t => t.patientId === patientId).sort((a,b)=>a.id.localeCompare(b.id));
+        if (tasks.length === 0) {
+            timelineContainer.innerHTML = `<li style="color:#999">${this.getText('no_treatment_records') || 'No records'}</li>`;
+            return;
+        }
+        timelineContainer.innerHTML = tasks.map(t => {
+            const isDone = t.status === 'COMPLETED';
+            const label = this.getText('task_label_' + t.type) || t.type;
+            const descText = this.getText(t.desc_key) || t.desc || '';
+            return `
+                <li class="timeline-item ${isDone ? 'done' : ''}">
+                    <div class="timeline-content">
+                        <span class="timeline-time">${isDone ? t.completedAt : this.getText('status_waiting')}</span>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <strong>${label}</strong>
+                            <span class="badge ${isDone ? 'badge-completed' : 'badge-pending'}">${isDone ? (this.getText('status_completed') || 'Completed') : (this.getText('status_inprogress') || 'In Progress')}</span>
+                        </div>
+                        <p style="margin-top:8px; font-size:13px; color:#555;">${isDone ? `🏁 ${this.getText('result_label') || 'Result:'} ${t.result}<br><small>${this.getText('performed_by') || 'Performed by:'} ${t.completedBy}</small>` : `📝 ${this.getText('note') || 'Note:'} ${descText}`}</p>
+                    </div>
+                </li>
+            `;
+        }).join('');
+    }
+
+    logout() {
+        if (!confirm(this.getText('confirm_reset') || 'Confirm logout?')) return;
+        localStorage.removeItem('aiCaseManage_user');
+        const appContainer = document.getElementById('app-container'); if (appContainer) appContainer.style.display = 'none';
+        const loginContainer = document.getElementById('login-container'); if (loginContainer) loginContainer.style.display = 'flex';
+        this.currentUser = null; this.userRole = null; this.currentPatientId = null;
+        const docForm = document.getElementById('doctor-login-form'); if (docForm) docForm.reset();
+        const patForm = document.getElementById('patient-login-form'); if (patForm) patForm.reset();
+        switchLoginRole('doctor');
     }
 
     getText(key, params) {
@@ -467,9 +967,14 @@ class App {
     navigate(viewId) {
         document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.sidebar nav button').forEach(el => el.classList.remove('active'));
-        
-        document.getElementById(`view-${viewId}`).classList.add('active');
-        event.currentTarget.classList.add('active');
+
+        // Activate view
+        const viewEl = document.getElementById(`view-${viewId}`);
+        if (viewEl) viewEl.classList.add('active');
+
+        // Mark corresponding nav button active (avoid relying on a missing event object)
+        const navBtn = document.getElementById(`nav-${viewId}`);
+        if (navBtn) navBtn.classList.add('active');
         
         // 刷新对应视图数据
         if (viewId === 'patients') this.renderPatientList();
@@ -486,30 +991,39 @@ class App {
 
     // --- 业务逻辑：患者管理 ---
     handleAddPatient(e) {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        // 生成随机6位就诊码 (模拟核验凭证)
-        const visitCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-        
-        const newPatient = {
-            id: Date.now().toString(),
-            name: formData.get('name'),
-            age: formData.get('age'),
-            visitCode: visitCode,
-            status: 'Waiting'
-        };
-
-        this.data.patients.push(newPatient);
-        
-        // create initial task (doctor prescription pending) - store key so description localizes
-        this.createTask(newPatient.id, 'PRESCRIPTION', 'task_default_PRESCRIPTION');
-
-        this.saveData();
-        this.closeModal('modal-add-patient');
-        this.renderPatientList();
-        this.logActivity(this.getText('log_new_patient', { name: newPatient.name, code: visitCode }));
-        e.target.reset();
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const visitCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    
+    // 自动生成账号与默认密码（避免医生端需要手动输入）
+    const rawName = (formData.get('name') || 'patient').toString().toLowerCase().replace(/\s+/g, '');
+    let accountCandidate = rawName || 'patient';
+    let suffix = 1;
+    while (this.data.patients.find(p => p.account === accountCandidate)) {
+        accountCandidate = `${rawName}${suffix}`;
+        suffix++;
     }
+    const defaultPassword = '123456';
+
+    const newPatient = {
+        id: Date.now().toString(),
+        name: formData.get('name'),
+        age: formData.get('age'),
+        visitCode: visitCode,
+        status: 'Waiting',
+        account: accountCandidate,
+        password: defaultPassword
+    };
+
+    this.data.patients.push(newPatient);
+    this.createTask(newPatient.id, 'PRESCRIPTION', 'task_default_PRESCRIPTION');
+    
+    this.saveData();
+    this.closeModal('modal-add-patient');
+    this.renderPatientList();
+    this.logActivity(this.getText('log_new_patient', { name: newPatient.name, code: visitCode }));
+    e.target.reset();
+}
 
     createTask(patientId, type, desc) {
         const task = {
@@ -577,12 +1091,33 @@ class App {
         // 规则：当前地点必须匹配任务要求，且操作员必须有权在该地点操作
         const requiredLoc = TASK_CONFIG[task.type].requiredLoc;
         
-        if (inputLocation !== requiredLoc) {
-            errors.push(this.getText('err_location_template', { required: requiredLoc, current: inputLocation }));
+        // 位置校验：如果已经检测到设备位置并且距离在允许半径内，则视为通过；否则使用用户选择的 location 字段进行比对
+        let locationOk = false;
+        if (this.currentDetectedLocation && this.currentDetectedLocation.nearest) {
+            const nearest = this.currentDetectedLocation.nearest;
+            const dist = this.currentDetectedLocation.distance;
+            const allowed = LOCATIONS[requiredLoc] && LOCATIONS[requiredLoc].radius;
+            if (nearest === requiredLoc && typeof allowed === 'number' && dist <= allowed) {
+                locationOk = true;
+            }
         }
-        
+
+        if (!locationOk) {
+            if (inputLocation !== requiredLoc) {
+                errors.push(this.getText('err_location_template', { required: requiredLoc, current: inputLocation }));
+            }
+        }
+
         if (operator.allowedLoc !== requiredLoc) {
             errors.push(this.getText('err_permission_template', { name: operator.name, required: requiredLoc }));
+        }
+
+        // 如果检测到的位置与任务要求的位置不匹配，阻止提交
+        if (this.currentDetectedLocation && this.currentDetectedLocation.nearest && 
+            this.currentDetectedLocation.nearest !== requiredLoc) {
+            errors.push(this.lang === 'zh' 
+                ? `❌ 位置错误：您当前在${LOCATIONS[this.currentDetectedLocation.nearest].name}，但任务要求在${LOCATIONS[requiredLoc].name}。请移动到正确位置后再试。`
+                : `❌ Location Error: You are at ${LOCATIONS[this.currentDetectedLocation.nearest].name}, but task requires ${LOCATIONS[requiredLoc].name}. Please move to correct location and try again.`);
         }
 
         if (errors.length > 0) {
@@ -600,18 +1135,41 @@ class App {
         if (task.type === 'PRESCRIPTION') {
             patient.status = 'In Treatment';
 
-            // auto-dispatch next
-            if (Math.random() > 0.5) {
+            // 根据病情决定后续任务
+            // 60%概率需要同时进行影像检查和理疗
+            // 20%概率只需要影像检查
+            // 20%概率只需要理疗
+            const rand = Math.random();
+            if (rand < 0.6) {
+                // 同时创建IMAGING和THERAPY任务
+                this.createTask(patient.id, 'IMAGING', 'task_default_IMAGING');
+                this.createTask(patient.id, 'THERAPY', 'task_default_THERAPY');
+                alert(this.getText('auto_imaging_therapy') || '已为您安排影像检查和理疗');
+            } else if (rand < 0.8) {
+                // 只需要影像检查
                 this.createTask(patient.id, 'IMAGING', 'task_default_IMAGING');
                 alert(this.getText('auto_imaging'));
             } else {
+                // 只需要理疗
                 this.createTask(patient.id, 'THERAPY', 'task_default_THERAPY');
                 alert(this.getText('auto_therapy'));
             }
         } else {
             // imaging or therapy finished
-            patient.status = 'Completed';
-            alert(this.getText('task_completed_alert'));
+            // 检查是否还有未完成的任务
+            const unfinishedTasks = this.data.tasks.filter(t => 
+                t.patientId === patient.id && 
+                t.status !== 'COMPLETED'
+            );
+
+            if (unfinishedTasks.length === 0) {
+                // 所有任务都已完成
+                patient.status = 'Completed';
+                alert(this.getText('task_completed_alert'));
+            } else {
+                // 还有其他任务未完成
+                alert(this.getText('task_completed_continue') || '当前任务已完成，请继续完成其他任务');
+            }
         }
 
 
@@ -700,8 +1258,14 @@ class App {
 
 
     filterTasks(type) {
+        // Clear previous active state
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
+
+        // Determine button id for this filter and mark it active
+        const btnId = type === 'ALL' ? 'filter-all' : `filter-${type.toLowerCase()}`;
+        const btn = document.getElementById(btnId);
+        if (btn) btn.classList.add('active');
+
         this.renderTaskList(type);
     }
 

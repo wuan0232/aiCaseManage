@@ -169,3 +169,568 @@ h2 { margin-bottom: 20px; font-size: 24px; }
     cursor: pointer;
     margin-left: 5px;
 }
+/* ====== 登录页面样式 ====== */
+.login-container {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    padding: 30px;
+}
+
+.login-card h2 {
+    text-align: center;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+#login-tip {
+    text-align: center;
+    color: var(--text-gray);
+    margin: 15px 0;
+    font-size: 14px;
+}
+
+.role-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.role-btn {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid var(--border);
+    background: var(--white);
+    color: var(--text-gray);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+    font-size: 14px;
+}
+
+.role-btn.active {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+}
+
+.role-btn:hover:not(.active) {
+    background: var(--bg-light);
+    border-color: var(--text-gray);
+}
+
+.login-form {
+    display: none;
+    animation: fadeIn 0.3s;
+}
+
+.login-form.active {
+    display: block;
+}
+
+.login-form .form-group {
+    margin-bottom: 20px;
+}
+
+.login-form .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-dark);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.login-form .form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+    background: var(--white);
+}
+
+.login-form .form-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-top: 10px;
+}
+
+.login-btn:hover {
+    background: #1d4ed8;
+}
+
+.login-btn:active {
+    transform: translateY(1px);
+}
+
+.alert {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    display: none;
+}
+
+.alert.error {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+    display: block;
+}
+
+/* ====== 用户角色相关样式 ====== */
+#nav-patient-self {
+    display: none; /* 默认隐藏，登录患者端时显示 */
+}
+
+.control-buttons {
+    margin-top: 8px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.control-buttons button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+#btn-reset {
+    color: var(--danger);
+}
+
+#btn-reset:hover {
+    background: #fee2e2;
+}
+
+#btn-export {
+    color: var(--primary);
+}
+
+#btn-export:hover {
+    background: #eff6ff;
+}
+
+.logout-btn {
+    color: var(--text-gray);
+    text-decoration: none;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: var(--bg-light);
+    color: var(--text-dark);
+}
+
+#lang-select {
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    background: var(--white);
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+#lang-select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* ====== 患者个人视图样式 ====== */
+#view-patient-self {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+#view-patient-self .card {
+    position: relative;
+}
+
+#view-patient-self .card > div:first-child {
+    background: var(--bg-light);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+#view-patient-self .card > div:first-child > div {
+    text-align: center;
+}
+
+#view-patient-self .card > div:first-child p:first-child {
+    color: var(--text-gray);
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+#view-patient-self .card > div:first-child p:nth-child(2) {
+    font-weight: bold;
+    font-size: 16px;
+    color: var(--text-dark);
+}
+
+#view-patient-self .card > button {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+/* ====== 数字就诊卡模态框样式 ====== */
+#modal-digital-card {
+    align-items: center;
+    justify-content: center;
+}
+
+#modal-digital-card .modal-content {
+    width: 360px;
+    text-align: center;
+    background: linear-gradient(135deg, var(--primary), #1d4ed8);
+    color: var(--white);
+    border-radius: 20px;
+    border: none;
+    overflow: hidden;
+    animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+#modal-digital-card .modal-content > div {
+    padding: 20px;
+}
+
+#modal-digital-card h3 {
+    color: var(--white);
+    margin-bottom: 5px;
+    opacity: 0.9;
+}
+
+#modal-digital-card p {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-bottom: 0;
+}
+
+#modal-digital-card .modal-content > div > div:first-of-type {
+    background: var(--white);
+    color: var(--text-dark);
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#card-visit-code {
+    font-size: 32px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: var(--primary);
+    font-family: 'Courier New', monospace;
+}
+
+#modal-digital-card .modal-content > div > div:nth-of-type(2) {
+    text-align: left;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+#modal-digital-card .modal-content > div > div:nth-of-type(2) p {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+#modal-digital-card .modal-content > div > div:nth-of-type(2) span {
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+#btn-card-close {
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: var(--white);
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+#btn-card-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* ====== 表单样式增强 ====== */
+#modal-add-patient input[name="account"],
+#modal-add-patient input[name="password"],
+#modal-edit-patient input[name="account"],
+#modal-edit-patient input[name="password"] {
+    background: var(--white);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+#modal-add-patient input[name="account"]:focus,
+#modal-add-patient input[name="password"]:focus,
+#modal-edit-patient input[name="account"]:focus,
+#modal-edit-patient input[name="password"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+#modal-add-patient input::placeholder,
+#modal-edit-patient input::placeholder {
+    color: #9ca3af;
+}
+
+/* ====== 响应式设计增强 ====== */
+@media (max-width: 768px) {
+    .app-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        padding: 10px 20px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+    
+    .logo {
+        margin-bottom: 0;
+        margin-right: 20px;
+    }
+    
+    .sidebar nav {
+        flex-direction: row;
+        gap: 5px;
+        flex: 1;
+    }
+    
+    .sidebar nav button {
+        text-align: center;
+        padding: 8px 12px;
+        font-size: 12px;
+        margin-bottom: 0;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        padding: 20px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .task-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        width: 90%;
+        max-width: 90%;
+    }
+    
+    .verify-content {
+        width: 90%;
+    }
+    
+    .form-group-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-action {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    #view-patient-self .card > div:first-child {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .control-buttons {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .control-buttons > * {
+        width: 100%;
+        text-align: left;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-card {
+        padding: 20px;
+    }
+    
+    .role-buttons {
+        flex-direction: column;
+    }
+    
+    .role-btn {
+        width: 100%;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .data-table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .filter-bar {
+        flex-wrap: wrap;
+    }
+    
+    .filter-btn {
+        flex: 1;
+        min-width: 80px;
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+    
+    .timeline-list {
+        padding-left: 10px;
+        margin-left: 5px;
+    }
+    
+    .timeline-item {
+        padding-left: 20px;
+    }
+    
+    .timeline-item::before {
+        left: -24px;
+        width: 12px;
+        height: 12px;
+    }
+}
+
+/* ====== 滚动条样式 ====== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-light);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--text-gray);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+/* ====== 加载动画 ====== */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.loading {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ====== 辅助类 ====== */
+.text-center {
+    text-align: center;
+}
+
+.mt-10 {
+    margin-top: 10px;
+}
+
+.mb-10 {
+    margin-bottom: 10px;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.hidden {
+    display: none;
+}

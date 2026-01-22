@@ -7,33 +7,67 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-container">
+    <!-- 新增登录页面（账号密码模式） -->
+    <div class="login-container" id="login-container">
+        <div class="login-card">
+            <h2>aiCaseManage 登录</h2>
+            <p id="login-tip" style="color:#666; margin:15px 0;">请选择登录身份</p>
+            <div class="role-buttons">
+                <button class="role-btn active" id="role-doctor" onclick="switchLoginRole('doctor')">医生端</button>
+                <button class="role-btn" id="role-patient" onclick="switchLoginRole('patient')">患者端</button>
+            </div>
+            <!-- 登录提示框 -->
+            <div id="login-alert" class="alert error" style="display:none;"></div>
+            <!-- 医生登录表单（账号密码） -->
+            <form class="login-form active" id="doctor-login-form" onsubmit="return handleDoctorLogin(event)">
+                <div class="form-group">
+                    <label for="doctor-account">医生账号</label>
+                    <input type="text" id="doctor-account" placeholder="输入医生账号" autocomplete="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="doctor-password">登录密码</label>
+                    <input type="password" id="doctor-password" placeholder="输入登录密码" autocomplete="current-password" required>
+                </div>
+                <p style="font-size:12px; color:#666; margin:10px 0;">默认账号：doc01，默认密码：123456</p>
+                <button type="submit" class="login-btn">登录医生端</button>
+            </form>
+            <!-- 患者登录表单（账号密码） -->
+            <form class="login-form" id="patient-login-form" onsubmit="return handlePatientLogin(event)">
+                <div class="form-group">
+                    <label for="patient-account">患者账号</label>
+                    <input type="text" id="patient-account" placeholder="输入患者账号" autocomplete="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="patient-password">登录密码</label>
+                    <input type="password" id="patient-password" placeholder="输入登录密码" autocomplete="current-password" required>
+                </div>
+                <p style="font-size:12px; color:#666; margin:10px 0;">示例账号：Lisi，密码：123456（在患者列表中可见）</p>
+                <button type="submit" class="login-btn">登录患者端</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="app-container" id="app-container" style="display:none;">
         <!-- 侧边栏导航 -->
         <aside class="sidebar">
             <div class="logo">aiCaseManage</div>
             <nav>
                 <button id="nav-dashboard" onclick="app.navigate('dashboard')" class="active">📊 Dashboard</button>
-                <button id="nav-patients" onclick="app.navigate('patients')">👥 Patients</button>
-                <button id="nav-tasks" onclick="app.navigate('tasks')">📋 Tasks</button>
+                <button id="nav-patients" onclick="app.navigate('patients')">👥 患者管理</button>
+                <button id="nav-tasks" onclick="app.navigate('tasks')">📋 诊疗任务</button>
+                <button id="nav-patient-self" onclick="app.navigate('patient-self')" style="display:none;">👤 我的信息</button>
             </nav>
-            <div class="system-status">
-                <span id="data-source">Data Source: LocalStorage</span>
-                <span id="storage-size"></span>
-                 <!-- control buttons -->
-                <div style="margin-top: 8px; display: flex; gap: 10px; align-items: center;">
-                    <button id="btn-reset" onclick="app.resetSystem()" style="color:#ef4444; border:none; background:none; cursor:pointer; font-size:12px;">[Reset]</button>
-                    <button id="btn-export" onclick="app.exportData()" style="color:#2563eb; border:none; background:none; cursor:pointer; font-size:12px;">[Export JSON]</button>
-                    <select id="lang-select" onchange="app.setLanguage(this.value)" style="font-size:12px;">
-                        <option value="en">English</option>
-                        <option value="zh">中文</option>
-                    </select>
-                </div>
+
+            <div class="sidebar-footer" style="padding:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <button id="btn-reset" onclick="app.resetSystem()" style="color:#ef4444; border:none; background:none; cursor:pointer; font-size:12px;">[重置]</button>
+                <button id="btn-export" onclick="app.exportData()" style="color:#2563eb; border:none; background:none; cursor:pointer; font-size:12px;">[导出JSON]</button>
+                <select id="lang-select" onchange="app.setLanguage(this.value)" style="font-size:12px;">
+                    <option value="en">English</option>
+                    <option value="zh">中文</option>
+                </select>
+                <button class="logout-btn" onclick="app.logout()">[退出登录]</button>
             </div>
-            <!-- 在 system-status 区域 -->
-
-
         </aside>
-
         <!-- 主内容区 -->
         <main class="main-content">
             <!-- 仪表盘视图 -->
@@ -101,22 +135,52 @@
                     <!-- Task cards generated by JS -->
                 </div>
             </section>
+
+            <!-- 患者个人视图（新增） -->
+            <section id="view-patient-self" class="view">
+                <h2 id="heading-patient-self">我的诊疗信息</h2>
+                <div class="card" style="margin-bottom:20px;">
+                    <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between;">
+                        <div>
+                            <p style="color: #666; font-size: 12px;" id="self-label-name">患者姓名</p>
+                            <p style="font-weight: bold; font-size: 16px;" id="self-p-name">--</p>
+                        </div>
+                        <div>
+                            <p style="color: #666; font-size: 12px;" id="self-label-visit">就诊码</p>
+                            <code style="background: #fff; padding: 2px 6px; border-radius: 4px;" id="self-p-code">--</code>
+                        </div>
+                        <div>
+                            <p style="color: #666; font-size: 12px;" id="self-label-status">当前状态</p>
+                            <span id="self-p-status" class="badge">--</span>
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="app.showDigitalCard(app.currentPatientId)" style="margin-bottom:20px;">查看电子就诊卡</button>
+                    <h3>我的诊疗记录</h3>
+                    <div class="timeline-container">
+                        <ul id="self-history-timeline" class="timeline-list"></ul>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
-    <!-- Modal: Add Patient -->
+    <!-- 模态框：新增患者 -->
     <div id="modal-add-patient" class="modal">
         <div class="modal-content">
             <h3>Add Patient</h3>
             <form onsubmit="app.handleAddPatient(event)">
                 <div class="form-group">
                     <label id="label-name">Name</label>
-                    <input type="text" name="name" required>
+                    <input type="text" name="name" autocomplete="name" required>
                 </div>
                 <div class="form-group">
                     <label id="label-age">Age</label>
-                    <input type="number" name="age" required>
+                    <input type="number" name="age" autocomplete="bday" required>
                 </div>
+                <div class="form-group">
+                    <!-- Account/password removed: generated automatically -->
+                </div>
+                <p style="font-size:12px; color:#666; margin:8px 0;">账号与密码将自动生成（默认密码：123456）。</p>
                 <div class="form-actions">
                     <button type="button" id="btn-add-cancel" onclick="app.closeModal('modal-add-patient')">Cancel</button>
                     <button type="submit" id="btn-add-register" class="btn-primary">Register</button>
@@ -125,7 +189,7 @@
         </div>
     </div>
 
-    <!-- Modal: Verification & Execution -->
+    <!-- 模态框：核验与执行 -->
     <div id="modal-verify" class="modal">
         <div class="modal-content verify-content">
             <div class="verify-header">
@@ -148,29 +212,39 @@
                     <h4 id="step-auth-check">3. Authenticity Check (AI Logic)</h4>
                     <div class="form-group">
                         <label id="label-location">Current Location (Location Check)</label>
-                        <select name="location" required>
-                            <option value="">-- Select current location --</option>
-                            <option value="DOC_OFFICE">Doctor Office (Prescription)</option>
-                            <option value="IMG_CENTER">Imaging Center (CT/X-ray)</option>
-                            <option value="PHYSIO_ROOM">Physio Room</option>
-                        </select>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <select name="location" required style="flex:1;" id="location-select">
+                                <option value="">-- Select current location --</option>
+                                <option value="DOC_OFFICE">Doctor Office - 瑞金医院</option>
+                                <option value="IMG_CENTER">Imaging Center - 影像楼</option>
+                                <option value="PHYSIO_ROOM">Physio Room - 康复楼</option>
+                                <option value="REGISTRATION">Registration - 门诊楼</option>
+                                <option value="PHARMACY">Pharmacy - 药房</option>
+                                <option value="LABORATORY">Laboratory - 检验科</option>
+                            </select>
+                            <button type="button" id="btn-locate" class="btn-sm" onclick="app.detectLocation()">Locate</button>
+                        </div>
+                        <div style="margin-top:8px; font-size:13px; color:#555;">
+                            <span id="detected-location">Detected: none</span>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label id="label-visit-code">Patient Visit Code (Verification)</label>
-                        <input type="text" name="visitCode" id="input-visit-code" placeholder="Enter the patient's 6-char code" required>
+                        <input type="text" name="visitCode" id="input-visit-code" placeholder="Enter the patient's 6-char code" autocomplete="one-time-code" required>
                     </div>
                     <div class="form-group-row">
                         <div>
                             <label id="label-operator-id">Operator ID</label>
-                            <select name="operatorId" required>
-                                <option value="DOC_01">Dr. Zhang (Doctor)</option>
-                                <option value="IMG_01">Technician Li (Imaging)</option>
-                                <option value="PHY_01">Therapist Wang (Therapy)</option>
+                           <select name="operatorId" required>
+                                <option value="DOC_01">Dr. Zhang - 医生</option>
+                                <option value="PHY_01">Therapist Wang - 理疗师</option>
+                                
                             </select>
+
                         </div>
                         <div>
                             <label id="label-security-pin">Security PIN</label>
-                            <input type="password" name="pin" placeholder="default: 1234" required>
+                            <input type="password" name="pin" placeholder="default: 1234" autocomplete="one-time-code" required>
                         </div>
                     </div>
                 </div>
@@ -182,87 +256,90 @@
             </form>
         </div>
     </div>
-tml
-<div id="modal-patient-history" class="modal">
-    <div class="modal-content" style="width: 600px;">
-        <div class="header-action">
-            <h3>📂 Patient Full Record</h3>
-            <button class="btn-sm" onclick="app.closeModal('modal-patient-history')">✕</button>
-        </div>
-        
-        <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between;">
-            <div>
-                <p style="color: #666; font-size: 12px;" id="hist-label-name">Patient Name</p>
-                <p style="font-weight: bold; font-size: 16px;" id="history-p-name">--</p>
-            </div>
-            <div>
-                <p style="color: #666; font-size: 12px;" id="hist-label-visit">Visit Code</p>
-                <code style="background: #fff; padding: 2px 6px; border-radius: 4px;" id="history-p-code">--</code>
-            </div>
-            <div>
-                <p style="color: #666; font-size: 12px;" id="hist-label-status">Current Status</p>
-                <span id="history-p-status" class="badge">--</span>
-            </div>
-        </div>
 
-        <div class="timeline-container">
-            <ul id="history-timeline-list" class="timeline-list">
+    <div id="modal-patient-history" class="modal">
+        <div class="modal-content" style="width: 600px;">
+            <div class="header-action">
+                <h3>📂 Patient Full Record</h3>
+                <button class="btn-sm" onclick="app.closeModal('modal-patient-history')">✕</button>
+            </div>
+            
+            <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between;">
+                <div>
+                    <p style="color: #666; font-size: 12px;" id="hist-label-name">Patient Name</p>
+                    <p style="font-weight: bold; font-size: 16px;" id="history-p-name">--</p>
+                </div>
+                <div>
+                    <p style="color: #666; font-size: 12px;" id="hist-label-visit">Visit Code</p>
+                    <code style="background: #fff; padding: 2px 6px; border-radius: 4px;" id="history-p-code">--</code>
+                </div>
+                <div>
+                    <p style="color: #666; font-size: 12px;" id="hist-label-status">Current Status</p>
+                    <span id="history-p-status" class="badge">--</span>
+                </div>
+            </div>
+
+            <div class="timeline-container">
+                <ul id="history-timeline-list" class="timeline-list">
                 </ul>
+            </div>
         </div>
     </div>
-</div>
-<!-- Modal: Edit Patient -->
-<div id="modal-edit-patient" class="modal">
-    <div class="modal-content">
-        <h3>✏️ Edit Patient</h3>
-        <form onsubmit="app.handleEditPatient(event)">
-            <!-- hidden id -->
-            <input type="hidden" id="edit-p-id" name="id">
-            
-            <div class="form-group">
-                <label id="label-edit-name">Name</label>
-                <input type="text" id="edit-p-name" name="name" required>
-            </div>
-            <div class="form-group">
-                <label id="label-edit-age">Age</label>
-                <input type="number" id="edit-p-age" name="age" required>
-            </div>
-            <!-- visit code is readonly -->
-            <div class="form-group">
-                <label id="label-edit-visit">Visit Code (read-only)</label>
-                <input type="text" id="edit-p-code" disabled style="background:#eee;">
-            </div>
 
-            <div class="form-actions">
-                <button type="button" id="btn-edit-cancel" onclick="app.closeModal('modal-edit-patient')">Cancel</button>
-                <button type="submit" id="btn-edit-save" class="btn-primary">Save</button>
-            </div>
-        </form>
-    </div>
-</div>
-<!-- Modal: Digital Visit Card (simulated patient mobile) -->
-<div id="modal-digital-card" class="modal">
-    <div class="modal-content" style="width: 360px; text-align: center; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border-radius: 20px;">
-        <div style="padding: 20px;">
-            <h3 style="margin-bottom: 5px; opacity: 0.9;">aiCaseManage</h3>
-            <p style="font-size: 12px; opacity: 0.8;">Digital Health Pass</p>
-            
-            <div style="background: white; color: #333; margin: 20px 0; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <p style="font-size: 12px; color: #666; margin-bottom: 5px;">Please show this code to staff</p>
-                <div id="card-visit-code" style="font-size: 32px; font-weight: bold; letter-spacing: 2px; color: #2563eb;">--</div>
-            </div>
-            
-            <div style="text-align: left; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
-                <p><span id="card-label-name">👤 Name:</span> <span id="card-p-name" style="font-weight: bold;">--</span></p>
-                <p><span id="card-label-status">📅 Status:</span> <span id="card-p-status" style="font-weight: bold;">--</span></p>
-            </div>
-            
-            <button id="btn-card-close" onclick="app.closeModal('modal-digital-card')" style="margin-top: 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 20px; border-radius: 20px; cursor: pointer;">Close</button>
+    <!-- 模态框：编辑患者 -->
+    <div id="modal-edit-patient" class="modal">
+        <div class="modal-content">
+            <h3>✏️ Edit Patient</h3>
+            <form onsubmit="app.handleEditPatient(event)">
+                <!-- hidden id -->
+                <input type="hidden" id="edit-p-id" name="id">
+                
+                <div class="form-group">
+                    <label id="label-edit-name">Name</label>
+                    <input type="text" id="edit-p-name" name="name" autocomplete="name" required>
+                </div>
+                <div class="form-group">
+                    <label id="label-edit-age">Age</label>
+                    <input type="number" id="edit-p-age" name="age" autocomplete="bday" required>
+                </div>
+                <div class="form-group">
+                    <!-- Account/password removed from edit form (managed by system) -->
+                </div>
+                <!-- visit code is readonly -->
+                <div class="form-group">
+                    <label id="label-edit-visit">Visit Code (read-only)</label>
+                    <input type="text" id="edit-p-code" disabled style="background:#eee;">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="btn-edit-cancel" onclick="app.closeModal('modal-edit-patient')">Cancel</button>
+                    <button type="submit" id="btn-edit-save" class="btn-primary">Save</button>
+                </div>
+            </form>
         </div>
     </div>
-</div>
 
-
+    <!-- 模态框：电子就诊卡 -->
+    <div id="modal-digital-card" class="modal">
+        <div class="modal-content" style="width: 360px; text-align: center; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border-radius: 20px;">
+            <div style="padding: 20px;">
+                <h3 style="margin-bottom: 5px; opacity: 0.9;">aiCaseManage</h3>
+                <p style="font-size: 12px; opacity: 0.8;">Digital Health Pass</p>
+                
+                <div style="background: white; color: #333; margin: 20px 0; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <p style="font-size: 12px; color: #666; margin-bottom: 5px;">Please show this code to staff</p>
+                    <div id="card-visit-code" style="font-size: 32px; font-weight: bold; letter-spacing: 2px; color: #2563eb;">--</div>
+                </div>
+                
+                <div style="text-align: left; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
+                    <p><span id="card-label-name">👤 Name:</span> <span id="card-p-name" style="font-weight: bold;">--</span></p>
+                    <p><span id="card-label-status">📅 Status:</span> <span id="card-p-status" style="font-weight: bold;">--</span></p>
+                </div>
+                
+                <button id="btn-card-close" onclick="app.closeModal('modal-digital-card')" style="margin-top: 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 20px; border-radius: 20px; cursor: pointer;">Close</button>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
