@@ -333,6 +333,9 @@ const TRANSLATIONS = {
         verify_title: '🔐 Treatment Verification & Entry',
         verify_subtitle: 'Please ensure the patient is present and verify identity',
         location_default: '-- Select current location --',
+        btn_locate: 'Locate',
+        locating: 'Locating...',
+        detected_none: 'Detected: none',
         loc_doc: 'Doctor Office (Prescription)', loc_img: 'Imaging Center (CT/X-ray)', loc_phy: 'Physio Room',
         patient_visit_code: "Enter the patient's 6-char code",
         operator_id: 'Operator ID', security_pin: 'Security PIN', verify_submit: 'Verify & Submit',
@@ -400,6 +403,9 @@ const TRANSLATIONS = {
         verify_title: '🔐 诊疗行为核验与录入',
         verify_subtitle: '请确保患者在场并核对身份',
         location_default: '-- 请选择当前位置 --',
+        btn_locate: '定位',
+        locating: '定位中...',
+        detected_none: '未检测到位置',
         loc_doc: '医生诊室 (开处方)', loc_img: '影像中心 (CT/X光)', loc_phy: '理疗康复室',
         patient_visit_code: '输入患者持有的6位代码',
         operator_id: '操作员 ID', security_pin: '安全 PIN 码', verify_submit: '核验并提交',
@@ -537,6 +543,10 @@ class App {
             this.checkLocationMatch();
         }
 
+        // 同步更新下拉选择（核验位置）以便演示时一致
+        const locSelect = document.querySelector('#modal-verify select[name="location"]');
+        if (locSelect) locSelect.value = locationKey;
+
         console.log('=== 选择目标位置 ===');
         console.log('位置:', target.name);
         console.log('坐标:', target.lat, target.lon);
@@ -549,7 +559,7 @@ class App {
         if (this.currentGPSLocation) {
             this.checkLocationMatch();
         } else {
-            alert(this.lang === 'zh' ? '请先点击Locate按钮获取GPS位置' : 'Please click Locate button to get GPS position first');
+            alert(this.getText('btn_locate') ? (this.lang === 'zh' ? '请先点击定位按钮获取GPS位置' : 'Please click Locate button to get GPS position first') : (this.lang === 'zh' ? '请先点击定位按钮获取GPS位置' : 'Please click Locate button to get GPS position first'));
         }
     }
 
@@ -885,80 +895,149 @@ class App {
 
         // 以下是真实定位代码（已注释）
         
-        // 使用Geolocation API获取位置
+        // 按钮禁用，防止重复点击
+        const locateBtn = document.getElementById('btn-locate');
+        if (locateBtn) {
+            locateBtn.disabled = true;
+            locateBtn.textContent = this.getText('locating') || (this.lang === 'zh' ? '定位中...' : 'Locating...');
+        }
+
+        // 优化：先短超时尝试真实定位（桌面/浏览器可能没有硬件），失败时回退到模拟定位
         const options = {
-            enableHighAccuracy: true,  // 请求高精度定位
-            timeout: 10000,            // 10秒超时
-            maximumAge: 0              // 不使用缓存的位置
+            enableHighAccuracy: false, // 降低精度以加快返回
+            timeout: 8000,             // 8秒超时
+            maximumAge: 0
+        };
+
+        const finish = () => {
+                if (locateBtn) {
+                    locateBtn.disabled = false;
+                    locateBtn.textContent = this.getText('btn_locate') || (this.lang === 'zh' ? '定位' : 'Locate');
+                }
         };
 
         navigator.geolocation.getCurrentPosition(
-            // 成功回调
             (position) => {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
 
-                // 保存GPS位置
-                this.currentGPSLocation = {
-                    lat: lat,
-                    lon: lon,
-                    accuracy: position.coords.accuracy
-                };
+                this.currentGPSLocation = { lat, lon, accuracy: position.coords.accuracy };
 
-                console.log('=== GPS定位成功 ===');
-                console.log('纬度:', lat);
-                console.log('经度:', lon);
-                console.log('精度:', position.coords.accuracy, '米');
-                console.log('==================');
-
-                // 计算与每个已知地点的距离（使用Haversine公式）
+                // 找到最近已知位置
                 let nearest = null;
                 let minDist = Infinity;
                 Object.keys(LOCATIONS).forEach(k => {
                     const d = this._haversineDistance(lat, lon, LOCATIONS[k].lat, LOCATIONS[k].lon);
-                    if (d < minDist) { 
-                        minDist = d; 
-                        nearest = k; 
-                    }
+                    if (d < minDist) { minDist = d; nearest = k; }
                 });
 
-                // 更新当前位置信息
                 this.currentDetectedLocation = { lat, lon, nearest, distance: minDist };
                 this.locationStatus = 'success';
 
-                // 更新UI显示
                 const locationName = nearest ? (LOCATIONS[nearest].name || nearest) : (this.lang === 'zh' ? '未知位置' : 'Unknown location');
                 const distText = minDist < Infinity ? `${minDist.toFixed(1)}m` : 'N/A';
                 this._updateLocationUI('success', `${this.lang === 'zh' ? 'GPS位置' : 'GPS Location'}: ${lat.toFixed(6)}, ${lon.toFixed(6)} (${this.lang === 'zh' ? '最近' : 'Nearest'}: ${locationName}, ${distText})`);
 
-                // 自动选择检测到的最近位置
                 const locSelect = document.querySelector('#modal-verify select[name="location"]');
                 if (locSelect && nearest) {
                     locSelect.value = nearest;
+                    const selNameEl = document.getElementById('selected-target-name');
+                    if (selNameEl && LOCATIONS[nearest]) selNameEl.textContent = LOCATIONS[nearest].name;
                 }
 
-                // 检查是否匹配目标位置
                 this.checkLocationMatch();
+                finish();
             },
-            // 错误回调
             (error) => {
+                // 真实定位失败，回退到模拟定位（用于演示/开发）
                 let errorMsg = '';
                 switch(error.code) {
                     case error.PERMISSION_DENIED:
-                        errorMsg = this.lang === 'zh' ? '用户拒绝了定位请求' : 'User denied the request for Geolocation';
+                        errorMsg = this.lang === 'zh' ? '用户拒绝了定位请求，使用模拟定位' : 'User denied Geolocation, using simulated location';
                         break;
                     case error.POSITION_UNAVAILABLE:
-                        errorMsg = this.lang === 'zh' ? '位置信息不可用' : 'Location information is unavailable';
+                        errorMsg = this.lang === 'zh' ? '位置信息不可用，使用模拟定位' : 'Position unavailable, using simulated location';
                         break;
                     case error.TIMEOUT:
-                        errorMsg = this.lang === 'zh' ? '定位请求超时' : 'The request to get user location timed out';
+                        errorMsg = this.lang === 'zh' ? '定位请求超时，使用模拟定位' : 'Geolocation timeout, using simulated location';
                         break;
                     default:
-                        errorMsg = this.lang === 'zh' ? '定位发生未知错误' : 'An unknown error occurred';
+                        errorMsg = this.lang === 'zh' ? '定位发生未知错误，使用模拟定位' : 'Unknown geolocation error, using simulated location';
                         break;
                 }
                 this.locationStatus = 'error';
                 this._updateLocationUI('error', errorMsg);
+
+                // small delay to make fallback feel natural
+                setTimeout(() => {
+                    // 模拟行为：基于当前核验任务的需求位置进行匹配或随机不匹配
+                    const taskIdInput = document.getElementById('verify-task-id');
+                    let requiredLocation = null;
+                    if (taskIdInput && taskIdInput.value) {
+                        const task = this.data.tasks.find(t => t.id === taskIdInput.value);
+                        if (task && TASK_CONFIG[task.type]) requiredLocation = TASK_CONFIG[task.type].requiredLoc;
+                    }
+
+                    // 如果用户通过快捷选择了目标，优先使用该目标作为 required
+                    if (!requiredLocation && this.selectedTargetLocation) {
+                        requiredLocation = this.selectedTargetLocation.key;
+                    }
+
+                    // 决定是否匹配（保留 70% 匹配概率）
+                    const shouldMismatch = Math.random() < 0.3;
+                    let detectedLocationKey = requiredLocation || Object.keys(LOCATIONS)[0];
+                    if (requiredLocation && shouldMismatch) {
+                        const choices = Object.keys(LOCATIONS).filter(k => k !== requiredLocation);
+                        detectedLocationKey = choices[Math.floor(Math.random() * choices.length)];
+                    }
+
+                    const locInfo = LOCATIONS[detectedLocationKey];
+                    const offsetLat = (Math.random() - 0.5) * 0.00012;
+                    const offsetLon = (Math.random() - 0.5) * 0.00012;
+                    const simLat = locInfo.lat + offsetLat;
+                    const simLon = locInfo.lon + offsetLon;
+                    const simulatedDistance = 5 + Math.random() * 30; // 5-35m
+
+                    this.currentDetectedLocation = { lat: simLat, lon: simLon, nearest: detectedLocationKey, distance: simulatedDistance };
+                    this.locationStatus = 'success';
+
+                    const locationName = LOCATIONS[detectedLocationKey].name;
+                    const distText = simulatedDistance.toFixed(1) + 'm';
+
+                    if (requiredLocation && detectedLocationKey !== requiredLocation) {
+                        const err = this.lang === 'zh'
+                            ? `❌ 位置错误：您当前在${locationName}，但任务要求在${LOCATIONS[requiredLocation].name}`
+                            : `❌ Location Error: You are at ${locationName}, but task requires ${LOCATIONS[requiredLocation].name}`;
+                        this._updateLocationUI('error', err);
+
+                        const locSelect = document.querySelector('#modal-verify select[name="location"]');
+                        if (locSelect) {
+                            locSelect.value = detectedLocationKey;
+                            const selNameEl = document.getElementById('selected-target-name');
+                            if (selNameEl && LOCATIONS[detectedLocationKey]) selNameEl.textContent = LOCATIONS[detectedLocationKey].name;
+                        }
+
+                        // 显示错误提示块
+                        const errorEl = document.createElement('div');
+                        errorEl.style.cssText = 'color: #dc2626; font-size: 13px; margin-top: 8px; padding: 10px; background: #fee2e2; border: 1px solid #fecaca; border-radius: 4px;';
+                        errorEl.id = 'location-error';
+                        errorEl.innerHTML = err;
+                        const oldError = document.getElementById('location-error'); if (oldError) oldError.remove();
+                        const locationDiv = document.getElementById('detected-location').parentNode;
+                        locationDiv.appendChild(errorEl);
+                    } else {
+                        this._updateLocationUI('success', `${this.lang === 'zh' ? '检测到' : 'Detected'}: ${locationName} (${this.lang === 'zh' ? '距离' : 'dist'}: ${distText})`);
+                        const locSelect = document.querySelector('#modal-verify select[name="location"]');
+                        if (locSelect) {
+                            locSelect.value = detectedLocationKey;
+                            const selNameEl = document.getElementById('selected-target-name');
+                            if (selNameEl && LOCATIONS[detectedLocationKey]) selNameEl.textContent = LOCATIONS[detectedLocationKey].name;
+                        }
+                        const oldError = document.getElementById('location-error'); if (oldError) oldError.remove();
+                    }
+
+                    finish();
+                }, 700);
             },
             options
         );
@@ -1177,6 +1256,10 @@ class App {
         }
         const visitInput = document.querySelector('#modal-verify input[name="visitCode"]'); if (visitInput) visitInput.placeholder = this.getText('patient_visit_code');
         const verifyBtn = document.querySelector('#modal-verify .form-actions button[type="submit"]'); if (verifyBtn) verifyBtn.innerText = this.getText('verify_submit');
+
+        // Locate button text and detected-location default
+        const locateBtn = document.getElementById('btn-locate'); if (locateBtn) locateBtn.innerText = this.getText('btn_locate') || 'Locate';
+        const detectedEl = document.getElementById('detected-location'); if (detectedEl) detectedEl.innerText = this.getText('detected_none');
 
         // Localize operator select option texts (name + role)
         const opSelect = document.querySelector('#modal-verify select[name="operatorId"]');
