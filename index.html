@@ -227,6 +227,62 @@
                         <div style="margin-top:8px; font-size:13px; color:#555;">
                             <span id="detected-location">Detected: none</span>
                         </div>
+
+                        <!-- 手动输入经纬度和精度 -->
+                        <div style="margin-top:12px; padding:12px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px;">
+                            <div style="margin-bottom:8px; font-weight:600; font-size:14px; color:#374151;">
+                                Target Location (目标位置设置)
+                            </div>
+
+                            <!-- 快捷位置按钮 -->
+                            <div style="margin-bottom:8px; padding:8px; background:#eef2ff; border:1px solid #c7d2fe; border-radius:4px;">
+                                <div style="font-size:12px; color:#4338ca; margin-bottom:4px; font-weight:500;">
+                                    Quick Select (快捷选择):
+                                </div>
+                                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                    <button type="button" onclick="app.selectTargetLocation('DOC_OFFICE')" 
+                                            style="padding:4px 8px; background:#6366f1; color:white; border:none; border-radius:3px; cursor:pointer; font-size:12px;">
+                                        诊室 (开处方)
+                                    </button>
+                                    <button type="button" onclick="app.selectTargetLocation('IMG_CENTER')" 
+                                            style="padding:4px 8px; background:#6366f1; color:white; border:none; border-radius:3px; cursor:pointer; font-size:12px;">
+                                        影像中心 (检查)
+                                    </button>
+                                    <button type="button" onclick="app.selectTargetLocation('PHYSIO_ROOM')" 
+                                            style="padding:4px 8px; background:#6366f1; color:white; border:none; border-radius:3px; cursor:pointer; font-size:12px;">
+                                        理疗中心 (治疗)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom:8px;">
+                                <label style="font-size:12px; color:#6b7280;">当前选择: <span id="selected-target-name" style="font-weight:600; color:#374151;">未选择</span></label>
+                            </div>
+
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <div style="flex:1; min-width:160px;">
+                                    <label style="font-size:12px; color:#6b7280;">Target Latitude (目标纬度)</label>
+                                    <input type="number" id="manual-lat" step="0.000001" placeholder="31.2204" 
+                                           style="width:100%; padding:6px; border:1px solid #d1d5db; border-radius:4px; font-size:13px;">
+                                </div>
+                                <div style="flex:1; min-width:160px;">
+                                    <label style="font-size:12px; color:#6b7280;">Target Longitude (目标经度)</label>
+                                    <input type="number" id="manual-lon" step="0.000001" placeholder="121.4476" 
+                                           style="width:100%; padding:6px; border:1px solid #d1d5db; border-radius:4px; font-size:13px;">
+                                </div>
+                                <div style="flex:1; min-width:120px;">
+                                    <label style="font-size:12px; color:#6b7280;">Radius (范围米)</label>
+                                    <input type="number" id="manual-accuracy" step="1" min="0" placeholder="100" 
+                                           style="width:100%; padding:6px; border:1px solid #d1d5db; border-radius:4px; font-size:13px;">
+                                </div>
+                                <div style="display:flex; align-items:flex-end;">
+                                    <button type="button" onclick="app.useManualLocation()" 
+                                            style="padding:6px 12px; background:#3b82f6; color:white; border:none; border-radius:4px; cursor:pointer; font-size:13px;">
+                                        Use (使用/定位)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label id="label-visit-code">Patient Visit Code (Verification)</label>

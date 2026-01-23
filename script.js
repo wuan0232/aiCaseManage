@@ -473,6 +473,355 @@ class App {
         }
     }
 
+    // 设置目标位置的坐标值（保留以兼容快捷按钮）
+    setTargetLocation(lat, lon, radius) {
+        document.getElementById('manual-lat').value = lat;
+        document.getElementById('manual-lon').value = lon;
+        document.getElementById('manual-accuracy').value = radius;
+
+        // 如果已经获取了GPS位置，立即检查匹配
+        if (this.currentGPSLocation) {
+            this.checkLocationMatch();
+        }
+    }
+
+    // 选择目标位置
+    selectTargetLocation(locationKey) {
+        // 定义目标位置信息
+        const locationInfo = {
+            'DOC_OFFICE': {
+                name: '诊室 (开处方)',
+                lat: 31.2204,
+                lon: 121.4476,
+                radius: 100
+            },
+            'IMG_CENTER': {
+                name: '影像中心 (检查)',
+                lat: 31.2216,
+                lon: 121.4493,
+                radius: 150
+            },
+            'PHYSIO_ROOM': {
+                name: '理疗中心 (治疗)',
+                lat: 31.2192,
+                lon: 121.4458,
+                radius: 100
+            }
+        };
+
+        const target = locationInfo[locationKey];
+        if (!target) {
+            alert(this.lang === 'zh' ? '无效的位置选择' : 'Invalid location selection');
+            return;
+        }
+
+        // 保存选中的目标位置
+        this.selectedTargetLocation = {
+            key: locationKey,
+            name: target.name,
+            lat: target.lat,
+            lon: target.lon,
+            radius: target.radius
+        };
+
+        // 自动填充经纬度和范围
+        document.getElementById('manual-lat').value = target.lat;
+        document.getElementById('manual-lon').value = target.lon;
+        document.getElementById('manual-accuracy').value = target.radius;
+
+        // 更新UI显示选中的位置
+        document.getElementById('selected-target-name').textContent = target.name;
+
+        // 如果已经获取了GPS位置，立即检查匹配
+        if (this.currentGPSLocation) {
+            this.checkLocationMatch();
+        }
+
+        console.log('=== 选择目标位置 ===');
+        console.log('位置:', target.name);
+        console.log('坐标:', target.lat, target.lon);
+        console.log('范围:', target.radius, '米');
+        console.log('==================');
+    }
+
+    // 刷新位置匹配检查
+    refreshLocationMatch() {
+        if (this.currentGPSLocation) {
+            this.checkLocationMatch();
+        } else {
+            alert(this.lang === 'zh' ? '请先点击Locate按钮获取GPS位置' : 'Please click Locate button to get GPS position first');
+        }
+    }
+
+    // 检查当前位置是否匹配目标位置
+    checkLocationMatch() {
+        if (!this.currentGPSLocation) {
+            return null;
+        }
+
+        const currentLat = this.currentGPSLocation.lat;
+        const currentLon = this.currentGPSLocation.lon;
+
+        // 如果没有选择目标位置，显示所有位置的匹配结果
+        if (!this.selectedTargetLocation) {
+            return this.checkAllLocations(currentLat, currentLon);
+        }
+
+        // 只检查选中的目标位置
+        const target = this.selectedTargetLocation;
+        const distance = this._haversineDistance(currentLat, currentLon, target.lat, target.lon);
+        const isMatch = distance <= target.radius;
+        const accuracy = Math.random() * 20 + 5;  // 随机生成5-25米的精度
+
+        // 更新UI显示
+        const detectedLocationEl = document.getElementById('detected-location');
+        const color = isMatch ? '#059669' : '#dc2626';
+        const status = isMatch ? '✓ 匹配' : '✗ 不匹配';
+        const matchDetail = isMatch ? '' : ` (超出${(distance - target.radius).toFixed(1)}米)`;
+
+        detectedLocationEl.innerHTML = `
+            <div style="font-size:12px;">
+                <div style="margin-bottom:4px; font-weight:600;">位置匹配结果:</div>
+                <div style="color:${color}; margin:2px 0;">
+                    ${status} ${target.name}<br/>
+                    距离: ${distance.toFixed(1)}米${matchDetail}<br/>
+                    精度: ${accuracy.toFixed(1)}米
+                </div>
+            </div>
+        `;
+
+        console.log('=== 位置匹配检查 ===');
+        console.log('当前位置:', currentLat, currentLon);
+        console.log('目标位置:', target.name);
+        console.log('目标坐标:', target.lat, target.lon);
+        console.log('目标范围:', target.radius, '米');
+        console.log('实际距离:', distance.toFixed(1), '米');
+        console.log('匹配状态:', isMatch ? '匹配' : '不匹配');
+        console.log('定位精度:', accuracy.toFixed(1), '米');
+        console.log('==================');
+
+        return {
+            key: target.key,
+            name: target.name,
+            distance: distance,
+            isMatch: isMatch,
+            accuracy: accuracy
+        };
+    }
+
+    // 检查所有位置的匹配结果
+    checkAllLocations(currentLat, currentLon) {
+        // 定义三个目标位置及其范围
+        const targetLocations = {
+            'DOC_OFFICE': {
+                name: '诊室 (开处方)',
+                lat: 31.2204,
+                lon: 121.4476,
+                radius: 100
+            },
+            'IMG_CENTER': {
+                name: '影像中心 (检查)',
+                lat: 31.2216,
+                lon: 121.4493,
+                radius: 150
+            },
+            'PHYSIO_ROOM': {
+                name: '理疗中心 (治疗)',
+                lat: 31.2192,
+                lon: 121.4458,
+                radius: 100
+            }
+        };
+
+        // 计算与每个目标位置的距离
+        const results = {};
+        Object.keys(targetLocations).forEach(key => {
+            const target = targetLocations[key];
+            const distance = this._haversineDistance(currentLat, currentLon, target.lat, target.lon);
+            const isMatch = distance <= target.radius;
+            results[key] = {
+                name: target.name,
+                distance: distance,
+                isMatch: isMatch,
+                accuracy: Math.random() * 20 + 5  // 随机生成5-25米的精度
+            };
+        });
+
+        // 更新UI显示
+        const detectedLocationEl = document.getElementById('detected-location');
+        let html = '<div style="font-size:12px;">';
+        html += '<div style="margin-bottom:4px; font-weight:600;">位置匹配结果:</div>';
+
+        Object.keys(results).forEach(key => {
+            const result = results[key];
+            const color = result.isMatch ? '#059669' : '#dc2626';
+            const status = result.isMatch ? '✓ 匹配' : '✗ 不匹配';
+            html += `<div style="color:${color}; margin:2px 0;">${status} ${result.name}: 距离${result.distance.toFixed(1)}米, 精度${result.accuracy.toFixed(1)}米</div>`;
+        });
+        html += '</div>';
+        detectedLocationEl.innerHTML = html;
+
+        console.log('=== 位置匹配检查 ===');
+        console.log('当前位置:', currentLat, currentLon);
+        Object.keys(results).forEach(key => {
+            const result = results[key];
+            console.log(`${result.name}: 距离${result.distance.toFixed(1)}米, ${result.isMatch ? '匹配' : '不匹配'}, 精度${result.accuracy.toFixed(1)}米`);
+        });
+        console.log('==================');
+
+        return results;
+    }
+
+    // 使用手动输入的坐标进行定位
+    useManualLocation() {
+        const latInput = document.getElementById('manual-lat');
+        const lonInput = document.getElementById('manual-lon');
+        const accuracyInput = document.getElementById('manual-accuracy');
+
+        const lat = parseFloat(latInput.value);
+        const lon = parseFloat(lonInput.value);
+        const accuracy = parseFloat(accuracyInput.value) || 10;
+
+        // 验证输入
+        if (isNaN(lat) || isNaN(lon)) {
+            alert(this.lang === 'zh' 
+                ? '请输入有效的经纬度！' 
+                : 'Please enter valid coordinates!');
+            return;
+        }
+
+        // 验证经纬度范围
+        // 验证经纬度范围
+        if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+            const msg = this.lang === 'zh'
+                ? '经纬度超出有效范围！\n纬度范围：-90 到 90\n经度范围：-180 到 180'
+                : 'Coordinates out of valid range!\nLatitude: -90 to 90\nLongitude: -180 to 180';
+            alert(msg);
+            return;
+        }
+
+        console.log('=== 手动输入坐标 ===');
+        console.log('纬度:', lat);
+        console.log('经度:', lon);
+        console.log('精度:', accuracy, '米');
+
+        // 更新状态为正在定位
+        this.locationStatus = 'detecting';
+        this._updateLocationUI('detecting', this.lang === 'zh' ? '正在定位中...' : 'Locating...');
+
+        // 使用Geolocation API获取当前位置
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        };
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const currentLat = position.coords.latitude;
+                const currentLon = position.coords.longitude;
+
+                // 保存GPS位置
+                this.currentGPSLocation = {
+                    lat: currentLat,
+                    lon: currentLon,
+                    accuracy: position.coords.accuracy
+                };
+
+                console.log('=== GPS定位成功 ===');
+                console.log('当前位置纬度:', currentLat);
+                console.log('当前位置经度:', currentLon);
+                console.log('GPS精度:', position.coords.accuracy, '米');
+                console.log('==================');
+
+                // 计算与目标位置的距离
+                const distance = this._haversineDistance(currentLat, currentLon, lat, lon);
+                const isMatch = distance <= accuracy;
+
+                // 查找匹配的下拉框位置
+                let matchedLocation = null;
+                Object.keys(LOCATIONS).forEach(k => {
+                    const loc = LOCATIONS[k];
+                    if (Math.abs(loc.lat - lat) < 0.0001 && Math.abs(loc.lon - lon) < 0.0001) {
+                        matchedLocation = k;
+                    }
+                });
+
+                // 更新UI显示
+                const detectedLocationEl = document.getElementById('detected-location');
+                const color = isMatch ? '#059669' : '#dc2626';
+                const status = isMatch ? '✓ 匹配' : '✗ 不匹配';
+                const matchDetail = isMatch ? '' : ` (超出${(distance - accuracy).toFixed(1)}米)`;
+                const locationName = matchedLocation ? LOCATIONS[matchedLocation].name : '目标位置';
+
+                detectedLocationEl.innerHTML = `
+                    <div style="font-size:12px;">
+                        <div style="margin-bottom:4px; font-weight:600;">位置匹配结果:</div>
+                        <div style="color:${color}; margin:2px 0;">
+                            ${status} ${locationName}<br/>
+                            距离: ${distance.toFixed(1)}米${matchDetail}<br/>
+                            精度: ${accuracy.toFixed(1)}米
+                        </div>
+                    </div>
+                `;
+
+                // 自动选择匹配的位置
+                const locSelect = document.querySelector('#modal-verify select[name="location"]');
+                if (locSelect && matchedLocation) {
+                    locSelect.value = matchedLocation;
+                }
+
+                console.log('=== 位置匹配结果 ===');
+                console.log('目标位置:', locationName);
+                console.log('实际距离:', distance.toFixed(1), '米');
+                console.log('匹配状态:', isMatch ? '匹配' : '不匹配');
+                console.log('==================');
+            },
+            (error) => {
+                let errorMsg = '';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMsg = this.lang === 'zh' ? '用户拒绝了定位请求' : 'User denied the request for Geolocation';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMsg = this.lang === 'zh' ? '位置信息不可用' : 'Location information is unavailable';
+                        break;
+                    case error.TIMEOUT:
+                        errorMsg = this.lang === 'zh' ? '定位请求超时' : 'The request to get user location timed out';
+                        break;
+                    default:
+                        errorMsg = this.lang === 'zh' ? '定位发生未知错误' : 'An unknown error occurred';
+                        break;
+                }
+                this.locationStatus = 'error';
+                this._updateLocationUI('error', errorMsg);
+            },
+            options
+        );
+
+    }
+    //     this.currentDetectedLocation = { 
+    //         lat, 
+    //         lon, 
+    //         nearest, 
+    //         distance: minDist,
+    //         accuracy: accuracy
+    //     };
+    //     this.locationStatus = 'success';
+
+    //     // 更新UI显示
+    //     const locationName = nearest ? (LOCATIONS[nearest].name || nearest) : (this.lang === 'zh' ? '未知位置' : 'Unknown location');
+    //     const distText = minDist < Infinity ? `${minDist.toFixed(1)}m` : 'N/A';
+    //     const accuracyText = this.lang === 'zh' ? `精度: ${accuracy}米` : `Accuracy: ${accuracy}m`;
+    //     this._updateLocationUI('success', `${this.lang === 'zh' ? '检测到' : 'Detected'}: ${locationName} (${this.lang === 'zh' ? '距离' : 'dist'}: ${distText}, ${accuracyText})`);
+
+    //     // 自动选择检测到的最近位置
+    //     const locSelect = document.querySelector('#modal-verify select[name="location"]');
+    //     if (locSelect && nearest) {
+    //         locSelect.value = nearest;
+    //     }
+    // }
+
     // 使用模拟定位获取位置（真实定位代码已注释）
     detectLocation() {
         console.log('detectLocation called');
@@ -604,6 +953,19 @@ class App {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
 
+                // 保存GPS位置
+                this.currentGPSLocation = {
+                    lat: lat,
+                    lon: lon,
+                    accuracy: position.coords.accuracy
+                };
+
+                console.log('=== GPS定位成功 ===');
+                console.log('纬度:', lat);
+                console.log('经度:', lon);
+                console.log('精度:', position.coords.accuracy, '米');
+                console.log('==================');
+
                 // 计算与每个已知地点的距离（使用Haversine公式）
                 let nearest = null;
                 let minDist = Infinity;
@@ -622,13 +984,16 @@ class App {
                 // 更新UI显示
                 const locationName = nearest ? (LOCATIONS[nearest].name || nearest) : (this.lang === 'zh' ? '未知位置' : 'Unknown location');
                 const distText = minDist < Infinity ? `${minDist.toFixed(1)}m` : 'N/A';
-                this._updateLocationUI('success', `${this.lang === 'zh' ? '检测到' : 'Detected'}: ${locationName} (${this.lang === 'zh' ? '距离' : 'dist'}: ${distText})`);
+                this._updateLocationUI('success', `${this.lang === 'zh' ? 'GPS位置' : 'GPS Location'}: ${lat.toFixed(6)}, ${lon.toFixed(6)} (${this.lang === 'zh' ? '最近' : 'Nearest'}: ${locationName}, ${distText})`);
 
                 // 自动选择检测到的最近位置
                 const locSelect = document.querySelector('#modal-verify select[name="location"]');
                 if (locSelect && nearest) {
                     locSelect.value = nearest;
                 }
+
+                // 检查是否匹配目标位置
+                this.checkLocationMatch();
             },
             // 错误回调
             (error) => {
