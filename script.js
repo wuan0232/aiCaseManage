@@ -481,116 +481,116 @@ class App {
         this._updateLocationUI('detecting', this.lang === 'zh' ? '正在定位中...' : 'Locating...');
 
         // 模拟定位延迟
-        setTimeout(() => {
-            console.log('setTimeout callback executed');
+        // setTimeout(() => {
+        //     console.log('setTimeout callback executed');
 
-            // 获取当前任务ID
-            const taskIdInput = document.getElementById('verify-task-id');
-            if (!taskIdInput || !taskIdInput.value) {
-                this._updateLocationUI('error', this.lang === 'zh' ? '请先选择一个任务' : 'Please select a task first');
-                return;
-            }
+        //     // 获取当前任务ID
+        //     const taskIdInput = document.getElementById('verify-task-id');
+        //     if (!taskIdInput || !taskIdInput.value) {
+        //         this._updateLocationUI('error', this.lang === 'zh' ? '请先选择一个任务' : 'Please select a task first');
+        //         return;
+        //     }
 
-            const taskId = taskIdInput.value;
-            const task = this.data.tasks.find(t => t.id === taskId);
+        //     const taskId = taskIdInput.value;
+        //     const task = this.data.tasks.find(t => t.id === taskId);
 
-            if (!task || !TASK_CONFIG[task.type]) {
-                this._updateLocationUI('error', this.lang === 'zh' ? '无效的任务类型' : 'Invalid task type');
-                return;
-            }
+        //     if (!task || !TASK_CONFIG[task.type]) {
+        //         this._updateLocationUI('error', this.lang === 'zh' ? '无效的任务类型' : 'Invalid task type');
+        //         return;
+        //     }
 
-            // 获取任务要求的位置
-            const requiredLocation = TASK_CONFIG[task.type].requiredLoc;
-            console.log('Task type:', task.type, 'Required location:', requiredLocation);
+        //     // 获取任务要求的位置
+        //     const requiredLocation = TASK_CONFIG[task.type].requiredLoc;
+        //     console.log('Task type:', task.type, 'Required location:', requiredLocation);
 
-            // 随机决定是否匹配位置（30%概率不匹配）
-            const shouldMismatch = Math.random() < 0.3;
-            console.log('Should mismatch:', shouldMismatch);
+        //     // 随机决定是否匹配位置（30%概率不匹配）
+        //     const shouldMismatch = Math.random() < 0.3;
+        //     console.log('Should mismatch:', shouldMismatch);
 
-            let detectedLocation;
-            if (shouldMismatch) {
-                // 随机选择一个不匹配的位置
-                const locationKeys = Object.keys(LOCATIONS).filter(loc => loc !== requiredLocation);
-                detectedLocation = locationKeys[Math.floor(Math.random() * locationKeys.length)];
-                console.log('Mismatched location:', detectedLocation);
-            } else {
-                // 使用任务要求的位置
-                detectedLocation = requiredLocation;
-                console.log('Matched location:', detectedLocation);
-            }
+        //     let detectedLocation;
+        //     if (shouldMismatch) {
+        //         // 随机选择一个不匹配的位置
+        //         const locationKeys = Object.keys(LOCATIONS).filter(loc => loc !== requiredLocation);
+        //         detectedLocation = locationKeys[Math.floor(Math.random() * locationKeys.length)];
+        //         console.log('Mismatched location:', detectedLocation);
+        //     } else {
+        //         // 使用任务要求的位置
+        //         detectedLocation = requiredLocation;
+        //         console.log('Matched location:', detectedLocation);
+        //     }
 
-            // 获取该位置的坐标
-            const { lat, lon } = LOCATIONS[detectedLocation];
-            console.log('Location coordinates:', { lat, lon });
+        //     // 获取该位置的坐标
+        //     const { lat, lon } = LOCATIONS[detectedLocation];
+        //     console.log('Location coordinates:', { lat, lon });
 
-            // 添加一些随机偏移，模拟定位误差
-            const offsetLat = (Math.random() - 0.5) * 0.0001;
-            const offsetLon = (Math.random() - 0.5) * 0.0001;
+        //     // 添加一些随机偏移，模拟定位误差
+        //     const offsetLat = (Math.random() - 0.5) * 0.0001;
+        //     const offsetLon = (Math.random() - 0.5) * 0.0001;
 
-            // 计算模拟距离（在10-30米之间）
-            const simulatedDistance = 10 + Math.random() * 20;
+        //     // 计算模拟距离（在10-30米之间）
+        //     const simulatedDistance = 10 + Math.random() * 20;
 
-            // 更新当前位置信息
-            this.currentDetectedLocation = {
-                lat: lat + offsetLat,
-                lon: lon + offsetLon,
-                nearest: detectedLocation,
-                distance: simulatedDistance
-            };
+        //     // 更新当前位置信息
+        //     this.currentDetectedLocation = {
+        //         lat: lat + offsetLat,
+        //         lon: lon + offsetLon,
+        //         nearest: detectedLocation,
+        //         distance: simulatedDistance
+        //     };
 
-            // 更新UI显示
-            const locationName = LOCATIONS[detectedLocation].name;
-            const distText = simulatedDistance.toFixed(1) + 'm';
+        //     // 更新UI显示
+        //     const locationName = LOCATIONS[detectedLocation].name;
+        //     const distText = simulatedDistance.toFixed(1) + 'm';
 
-            // 检查位置是否匹配
-            if (detectedLocation !== requiredLocation) {
-                // 位置不匹配，显示红色错误提示
-                const errorMsg = this.lang === 'zh'
-                    ? `❌ 位置错误：您当前在${locationName}，但任务要求在${LOCATIONS[requiredLocation].name}`
-                    : `❌ Location Error: You are at ${locationName}, but task requires ${LOCATIONS[requiredLocation].name}`;
-                this._updateLocationUI('error', errorMsg);
+        //     // 检查位置是否匹配
+        //     if (detectedLocation !== requiredLocation) {
+        //         // 位置不匹配，显示红色错误提示
+        //         const errorMsg = this.lang === 'zh'
+        //             ? `❌ 位置错误：您当前在${locationName}，但任务要求在${LOCATIONS[requiredLocation].name}`
+        //             : `❌ Location Error: You are at ${locationName}, but task requires ${LOCATIONS[requiredLocation].name}`;
+        //         this._updateLocationUI('error', errorMsg);
 
-                // 自动选择检测到的位置
-                const locSelect = document.querySelector('#modal-verify select[name="location"]');
-                if (locSelect) {
-                    locSelect.value = detectedLocation;
+        //         // 自动选择检测到的位置
+        //         const locSelect = document.querySelector('#modal-verify select[name="location"]');
+        //         if (locSelect) {
+        //             locSelect.value = detectedLocation;
 
-                    // 显示红色错误提示
-                    const errorEl = document.createElement('div');
-                    errorEl.style.cssText = 'color: #dc2626; font-size: 13px; margin-top: 8px; padding: 10px; background: #fee2e2; border: 1px solid #fecaca; border-radius: 4px;';
-                    errorEl.id = 'location-error';
-                    errorEl.innerHTML = errorMsg;
+        //             // 显示红色错误提示
+        //             const errorEl = document.createElement('div');
+        //             errorEl.style.cssText = 'color: #dc2626; font-size: 13px; margin-top: 8px; padding: 10px; background: #fee2e2; border: 1px solid #fecaca; border-radius: 4px;';
+        //             errorEl.id = 'location-error';
+        //             errorEl.innerHTML = errorMsg;
 
-                    // 移除旧的错误提示
-                    const oldError = document.getElementById('location-error');
-                    if (oldError) {
-                        oldError.remove();
-                    }
+        //             // 移除旧的错误提示
+        //             const oldError = document.getElementById('location-error');
+        //             if (oldError) {
+        //                 oldError.remove();
+        //             }
 
-                    // 添加新的错误提示
-                    const locationDiv = document.getElementById('detected-location').parentNode;
-                    locationDiv.appendChild(errorEl);
-                }
-            } else {
-                // 位置匹配，显示成功信息
-                this._updateLocationUI('success', `${this.lang === 'zh' ? '检测到' : 'Detected'}: ${locationName} (${this.lang === 'zh' ? '距离' : 'dist'}: ${distText})`);
+        //             // 添加新的错误提示
+        //             const locationDiv = document.getElementById('detected-location').parentNode;
+        //             locationDiv.appendChild(errorEl);
+        //         }
+        //     } else {
+        //         // 位置匹配，显示成功信息
+        //         this._updateLocationUI('success', `${this.lang === 'zh' ? '检测到' : 'Detected'}: ${locationName} (${this.lang === 'zh' ? '距离' : 'dist'}: ${distText})`);
 
-                // 自动选择检测到的最近位置
-                const locSelect = document.querySelector('#modal-verify select[name="location"]');
-                if (locSelect) {
-                    locSelect.value = detectedLocation;
+        //         // 自动选择检测到的最近位置
+        //         const locSelect = document.querySelector('#modal-verify select[name="location"]');
+        //         if (locSelect) {
+        //             locSelect.value = detectedLocation;
 
-                    // 移除错误提示
-                    const oldError = document.getElementById('location-error');
-                    if (oldError) {
-                        oldError.remove();
-                    }
-                }
-            }
-        }, 1000);  // 模拟1秒的定位延迟
+        //             // 移除错误提示
+        //             const oldError = document.getElementById('location-error');
+        //             if (oldError) {
+        //                 oldError.remove();
+        //             }
+        //         }
+        //     }
+        // }, 1000);  // 模拟1秒的定位延迟
 
         // 以下是真实定位代码（已注释）
-        /*
+        
         // 使用Geolocation API获取位置
         const options = {
             enableHighAccuracy: true,  // 请求高精度定位
@@ -652,7 +652,7 @@ class App {
             },
             options
         );
-        */
+        
     }
 
     // 使用Haversine公式计算两点间的实际地理距离（单位：米）
